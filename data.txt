@@ -1097,3 +1097,4 @@ Commit at 2025-05-23T15:28:18 - Refactor routing configuration
 Commit at 2026-01-20T15:31:05 - Fix bug in date parsing logic
 Commit at 2024-02-22T06:28:07 - Fix bug in date parsing logic
 Commit at 2024-09-26T05:18:37 - Fix memory leak in background worker
+Commit at 2024-01-19T12:43:53 - Add Dockerfile for containerization
