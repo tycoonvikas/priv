@@ -284,3 +284,4 @@ Commit at 2023-06-18T21:09:19 - Add localization support (i18n)
 Commit at 2025-12-18T07:20:20 - Add localization support (i18n)
 Commit at 2025-12-03T10:51:29 - Add database indexing to improve search
 Commit at 2025-10-21T15:05:54 - Fix memory leak in background worker
+Commit at 2024-01-24T05:27:14 - Implement WebSocket for real-time notifications
