@@ -208,3 +208,4 @@ Commit at 2025-10-26T18:11:01 - Fix memory leak in background worker
 Commit at 2023-07-06T13:51:32 - Migrate from npm to yarn
 Commit at 2024-12-08T21:29:35 - Refactor frontend state management
 Commit at 2024-06-11T21:49:40 - Add localization support (i18n)
+Commit at 2024-04-29T09:49:11 - Refactor routing configuration
