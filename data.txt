@@ -132,3 +132,4 @@ Commit at 2023-12-20T17:09:06 - Refactor routing configuration
 Commit at 2023-12-14T08:08:56 - Add localization support (i18n)
 Commit at 2023-06-05T12:08:56 - Add unit tests for API endpoints
 Commit at 2023-08-13T12:16:55 - Add unit tests for API endpoints
+Commit at 2024-07-09T00:28:14 - Fix memory leak in background worker
