@@ -70,3 +70,4 @@ Commit at 2023-08-23T18:56:32 - Fix typo in documentation
 Commit at 2023-01-27T00:41:16 - Add unit tests for API endpoints
 Commit at 2024-06-15T11:46:15 - Add caching layer using Redis
 Commit at 2024-09-13T02:26:13 - Add database indexing to improve search
+Commit at 2024-09-21T17:48:24 - Add Dockerfile for containerization
