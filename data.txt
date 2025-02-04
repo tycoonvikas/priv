@@ -1201,3 +1201,4 @@ Commit at 2024-06-02T16:49:43 - Add localization support (i18n)
 Commit at 2025-08-31T06:50:39 - Update project dependencies
 Commit at 2025-02-22T23:03:02 - Migrate from npm to yarn
 Commit at 2025-07-15T08:59:26 - Fix responsive layout on mobile devices
+Commit at 2025-02-04T17:24:45 - Fix memory leak in background worker
