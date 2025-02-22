@@ -1199,3 +1199,4 @@ Commit at 2026-02-15T15:26:00 - Add unit tests for API endpoints
 Commit at 2026-05-05T21:18:05 - Implement rate limiting middleware
 Commit at 2024-06-02T16:49:43 - Add localization support (i18n)
 Commit at 2025-08-31T06:50:39 - Update project dependencies
+Commit at 2025-02-22T23:03:02 - Migrate from npm to yarn
