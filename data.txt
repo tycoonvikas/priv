@@ -986,3 +986,4 @@ Commit at 2026-08-03T03:43:28 - Add unit tests for API endpoints
 Commit at 2025-09-19T03:39:58 - Add unit tests for API endpoints
 Commit at 2025-12-12T11:19:18 - Add support for dark mode theme
 Commit at 2025-05-16T12:47:54 - Add caching layer using Redis
+Commit at 2025-02-26T07:01:40 - Add Dockerfile for containerization
