@@ -348,3 +348,4 @@ Commit at 2023-04-29T03:30:13 - Add localization support (i18n)
 Commit at 2024-08-10T02:21:57 - Add localization support (i18n)
 Commit at 2023-06-08T23:44:28 - Refactor routing configuration
 Commit at 2025-03-26T04:50:33 - Fix edge case in validation logic
+Commit at 2025-03-06T11:53:24 - Add logging for critical errors
