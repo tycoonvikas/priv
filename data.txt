@@ -330,3 +330,4 @@ Commit at 2023-07-12T22:07:43 - Add unit tests for API endpoints
 Commit at 2025-12-30T14:15:46 - Improve error handling in payment gateway
 Commit at 2025-06-20T22:15:30 - Update README.md
 Commit at 2024-11-23T09:40:31 - Remove dead code and unused imports
+Commit at 2025-05-05T09:44:46 - Add logging for critical errors
