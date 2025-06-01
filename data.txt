@@ -645,3 +645,4 @@ Commit at 2025-05-10T13:37:36 - Add unit tests for API endpoints
 Commit at 2026-07-13T07:23:48 - Add support for dark mode theme
 Commit at 2024-12-31T14:11:30 - Refactor frontend state management
 Commit at 2024-08-26T13:33:21 - Add unit tests for API endpoints
+Commit at 2025-06-01T10:01:16 - Add Dockerfile for containerization
