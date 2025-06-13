@@ -710,3 +710,4 @@ Commit at 2025-12-21T22:13:02 - Add localization support (i18n)
 Commit at 2025-06-18T10:00:21 - Add Dockerfile for containerization
 Commit at 2026-08-07T16:39:06 - Update project dependencies
 Commit at 2026-04-11T05:18:42 - Add database indexing to improve search
+Commit at 2025-06-13T21:37:03 - Migrate from npm to yarn
