@@ -1116,3 +1116,4 @@ Commit at 2025-11-22T06:08:34 - Update README.md
 Commit at 2024-08-24T06:18:34 - Add caching layer using Redis
 Commit at 2025-04-08T00:07:28 - Improve accessibility (a11y) score
 Commit at 2024-03-02T19:58:43 - Optimize database queries for performance
+Commit at 2025-07-26T00:08:15 - Add Dockerfile for containerization
