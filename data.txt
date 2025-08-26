@@ -952,3 +952,4 @@ Commit at 2024-10-22T10:35:16 - Update README.md
 Commit at 2025-05-27T17:13:21 - Fix security vulnerability in dependency
 Commit at 2025-06-14T14:44:23 - Add Dockerfile for containerization
 Commit at 2024-12-01T12:22:36 - Fix typo in documentation
+Commit at 2025-08-26T16:04:26 - Improve accessibility (a11y) score
