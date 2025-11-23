@@ -233,3 +233,4 @@ Commit at 2024-01-26T18:47:00 - Add Dockerfile for containerization
 Commit at 2025-06-04T04:05:34 - Fix CSS styling issue in header
 Commit at 2025-07-28T08:29:41 - Remove dead code and unused imports
 Commit at 2024-09-02T18:51:57 - Add Dockerfile for containerization
+Commit at 2025-11-23T10:26:01 - Add unit tests for API endpoints
