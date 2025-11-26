@@ -356,3 +356,4 @@ Commit at 2025-10-15T00:08:56 - Add localization support (i18n)
 Commit at 2023-04-25T11:33:30 - Refactor routing configuration
 Commit at 2025-05-21T06:38:36 - Improve accessibility (a11y) score
 Commit at 2024-10-30T04:49:23 - Fix typo in documentation
+Commit at 2025-11-26T19:14:30 - Migrate from npm to yarn
