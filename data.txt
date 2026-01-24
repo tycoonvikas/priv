@@ -447,3 +447,4 @@ Commit at 2024-12-11T02:48:44 - Migrate from npm to yarn
 Commit at 2024-11-04T20:15:11 - Update GitHub Actions CI/CD pipeline
 Commit at 2026-04-24T01:34:17 - Update README.md
 Commit at 2026-01-08T07:02:31 - Refactor frontend state management
+Commit at 2026-01-24T08:58:06 - Migrate from npm to yarn
