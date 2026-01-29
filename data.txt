@@ -1018,3 +1018,4 @@ Commit at 2025-07-19T05:47:55 - Add logging for critical errors
 Commit at 2025-05-22T06:29:46 - Add localization support (i18n)
 Commit at 2024-05-30T01:17:19 - Migrate from npm to yarn
 Commit at 2024-07-12T05:01:47 - Add Dockerfile for containerization
+Commit at 2026-01-29T13:09:10 - Implement WebSocket for real-time notifications
