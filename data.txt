@@ -471,3 +471,4 @@ Commit at 2026-04-20T09:46:13 - Add localization support (i18n)
 Commit at 2026-04-24T10:07:52 - Implement rate limiting middleware
 Commit at 2025-11-21T15:06:31 - Update README.md
 Commit at 2025-02-01T10:15:51 - Add caching layer using Redis
+Commit at 2026-04-06T13:06:31 - Migrate from npm to yarn
