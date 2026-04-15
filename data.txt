@@ -829,3 +829,4 @@ Commit at 2025-05-07T13:33:21 - Implement WebSocket for real-time notifications
 Commit at 2025-06-25T00:41:05 - Add caching layer using Redis
 Commit at 2024-06-03T15:59:32 - Update README.md
 Commit at 2025-02-12T19:52:43 - Fix bug in date parsing logic
+Commit at 2026-04-15T21:52:37 - Add Dockerfile for containerization
