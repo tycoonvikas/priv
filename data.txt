@@ -1241,3 +1241,4 @@ Commit at 2026-06-27T04:51:50 - Improve accessibility (a11y) score
 Commit at 2025-12-04T22:49:21 - Fix security vulnerability in dependency
 Commit at 2025-06-05T11:53:42 - Add support for dark mode theme
 Commit at 2024-03-31T06:09:04 - Initial commit
+Commit at 2026-06-02T09:32:56 - Migrate from npm to yarn
