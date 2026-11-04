@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Execution Intelligence & Multi-Agent Algorithmic Trading System — Nexus Technologies Architecture Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            cream: {
+              50: '#FAF8F5',
+              100: '#F3EFEA',
+              200: '#E4E0D8',
+              300: '#D0C9BD',
+            },
+            ink: {
+              900: '#111111',
+              700: '#3D3A35',
+              500: '#6E6A63',
+              400: '#948F86',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #FAF8F5;
+      color: #111111;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+    .editorial-card {
+      background-color: #FFFFFF;
+      border: 1px solid #E4E0D8;
+      box-shadow: 0 1px 3px rgba(17, 17, 17, 0.03), 0 6px 20px -6px rgba(17, 17, 17, 0.04);
+    }
+    .stone-panel {
+      background-color: #F3EFEA;
+      border: 1px solid #E4E0D8;
+    }
+    .code-panel {
+      background-color: #F7F5F0;
+      border: 1px solid #E4E0D8;
+    }
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F3EFEA;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #C7C0B5;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #948F86;
+    }
+    /* Pulsing ring for buy dots on the market line */
+    @keyframes pulseRing {
+      0% {
+        r: 8px;
+        opacity: 0.75;
+      }
+      70% {
+        r: 18px;
+        opacity: 0;
+      }
+      100% {
+        r: 18px;
+        opacity: 0;
+      }
+    }
+    .buy-dot-pulse {
+      animation: pulseRing 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    }
+    @keyframes dashFlow {
+      to {
+        stroke-dashoffset: -20;
+      }
+    }
+    .animated-route-line {
+      stroke-dasharray: 5 5;
+      animation: dashFlow 1s linear infinite;
+    }
+    .buy-dot-group {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .buy-dot-group:hover {
+      filter: drop-shadow(0 2px 6px rgba(22, 101, 52, 0.35));
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-emerald-900 selection:text-white">
+
+  <!-- =========================================================================
+       TOP EDITORIAL HEADER & RESUME BENCHMARK BAR
+       ========================================================================= -->
+  <header class="sticky top-0 z-30 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-cream-200">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand / Project Title -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-ink-900 text-cream-50 flex items-center justify-center font-mono font-bold text-sm tracking-tight shadow-sm">
+          RL
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h1 class="font-serif text-2xl sm:text-3xl tracking-tight text-ink-900 leading-none">
+              Execution Intelligence &amp; Multi-Agent Algorithmic Trading System
+            </h1>
+            <span class="px-2.5 py-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider bg-stone-200/80 text-ink-900 border border-cream-300 rounded-full">
+              Nexus Technologies R&amp;D
+            </span>
+          </div>
+          <p class="text-xs text-ink-500 mt-1">
+            GMM Market Regime Clustering &rarr; 30s L2 Price &amp; Liquidity Forecast &rarr; Fill Probability &amp; Impact &rarr; PPO Reinforcement Learning Brain &rarr; Smart Venue Router
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Action Controls -->
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <!-- Toggle Popup on Dot Click -->
+        <button id="btnTogglePopupMode" onclick="togglePopupOnDotClick()" class="px-3 py-2 rounded-lg text-xs font-mono font-medium bg-white hover:bg-cream-100 text-ink-900 border border-cream-200 transition flex items-center gap-2 shadow-sm">
+          <span id="popupModeIndicator" class="w-2 h-2 rounded-full bg-emerald-700"></span>
+          <span id="popupModeLabel">Click Dot Opens 6-Stage Popup: ON</span>
+        </button>
+
+        <!-- Simulate Next Buy Execution Button -->
+        <button onclick="stepToNextBuyOrder()" class="px-3.5 py-2 rounded-lg text-xs font-semibold bg-emerald-800 hover:bg-emerald-900 text-white transition flex items-center gap-2 shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+          <span>Step Next Buy Dot</span>
+        </button>
+
+        <!-- Interview Pitch Guide -->
+        <button onclick="openPitchModal()" class="px-3 py-2 rounded-lg text-xs font-semibold bg-ink-900 hover:bg-ink-700 text-cream-50 transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Interview Pitch Guide</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Resume KPI Strip -->
+    <div class="bg-cream-100/90 border-t border-cream-200">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-cream-200">
+          <span class="text-ink-500 font-medium">LOB Forecast Acc.</span>
+          <span class="font-mono font-bold text-ink-900">96.0% <span class="text-[10px] text-emerald-700 font-normal">Tick-Level</span></span>
+        </div>
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-cream-200">
+          <span class="text-ink-500 font-medium">Regime Shift Latency</span>
+          <span class="font-mono font-bold text-emerald-800">-450 ms <span class="text-[10px] text-ink-500 font-normal">LangChain</span></span>
+        </div>
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-cream-200">
+          <span class="text-ink-500 font-medium">Slippage Reduction</span>
+          <span class="font-mono font-bold text-emerald-800">14.2 BPS <span class="text-[10px] text-ink-500 font-normal">Saved</span></span>
+        </div>
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-cream-200">
+          <span class="text-ink-500 font-medium">vs. Standard VWAP</span>
+          <span class="font-mono font-bold text-ink-900">+22.0% <span class="text-[10px] text-emerald-700 font-normal">Alpha</span></span>
+        </div>
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-cream-200">
+          <span class="text-ink-500 font-medium">vs. Standard TWAP</span>
+          <span class="font-mono font-bold text-ink-900">+18.0% <span class="text-[10px] text-emerald-700 font-normal">Alpha</span></span>
+        </div>
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-cream-200">
+          <span class="text-ink-500 font-medium">Backtest Validation</span>
+          <span class="font-mono font-bold text-ink-900">1.5M+ <span class="text-[10px] text-ink-500 font-normal">Trades</span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN WORKSPACE
+       ========================================================================= -->
+  <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- =======================================================================
+         SECTION 1: INTERACTIVE MARKET LINE & BUY ORDER EXECUTION DOTS
+         ======================================================================= -->
+    <section class="editorial-card rounded-2xl overflow-hidden">
+      <!-- Top Bar of Market Chart -->
+      <div class="p-4 sm:px-6 border-b border-cream-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-ink-500">
+            <span class="w-2 h-2 rounded-full bg-emerald-700 animate-pulse"></span>
+            <span>Institutional Parent Order Execution Tape &bull; Ticker: NVDA (NASDAQ / NYSE / Dark ATS)</span>
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl text-ink-900 mt-0.5">
+            Live Market Price Trajectory &amp; RL Model Buy Order Executions
+          </h2>
+          <p class="text-xs sm:text-sm text-ink-700 mt-0.5">
+            Parent Order: <strong class="font-mono text-ink-900">BUY 150,000 NVDA</strong> &bull;
+            <span class="underline decoration-emerald-700 font-semibold text-emerald-900">Click any green BUY ORDER DOT on the market line below</span> to launch the 6-Stage Execution Intelligence Pipeline for that exact slice.
+          </p>
+        </div>
+
+        <!-- Quick-Select Buy Order Dot Pills -->
+        <div class="flex flex-wrap items-center gap-1.5" id="buyDotSelectorPills">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Legend & Parent Order Progress Bar -->
+      <div class="px-4 sm:px-6 py-2.5 bg-cream-50 border-b border-cream-200 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="flex items-center gap-1.5 text-ink-900 font-semibold">
+            <span class="w-5 h-0.5 bg-ink-900 inline-block"></span> Market Mid-Price ($)
+          </span>
+          <span class="flex items-center gap-1.5 text-amber-800">
+            <span class="w-5 h-0.5 border-b-2 border-dashed border-amber-700 inline-block"></span> Benchmark VWAP ($)
+          </span>
+          <span class="flex items-center gap-1.5 text-emerald-800 font-semibold">
+            <span class="w-3 h-3 rounded-full bg-emerald-700 border-2 border-white shadow inline-block"></span> RL Model Buy Order Dot (Click to Inspect 6 Stages)
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-ink-500">Parent Fill: <strong class="text-ink-900">150,000 / 150,000 sh (100%)</strong></span>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 font-semibold">
+            Avg Fill: $138.64 vs VWAP $138.84 (+14.4 BPS Saved)
+          </span>
+        </div>
+      </div>
+
+      <!-- Interactive SVG Market Line Canvas -->
+      <div class="relative p-4 sm:p-6 bg-white">
+        <svg id="marketChartSvg" viewBox="0 0 1120 350" class="w-full h-auto select-none overflow-visible">
+          <defs>
+            <!-- Subtle gradient under the market price line -->
+            <linearGradient id="priceAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#111111" stop-opacity="0.09" />
+              <stop offset="100%" stop-color="#111111" stop-opacity="0.0" />
+            </linearGradient>
+            <!-- Filter for active dot elevation -->
+            <filter id="dotShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#166534" flood-opacity="0.35" />
+            </filter>
+          </defs>
+
+          <!-- Background Regime Bands (Rendered by JS) -->
+          <g id="svgRegimeBands"></g>
+
+          <!-- Horizontal Price Grid Lines & Y-Axis Labels -->
+          <g id="svgGridLines"></g>
+
+          <!-- Shaded Area under Market Line -->
+          <path id="svgPriceArea" d="" fill="url(#priceAreaGrad)" />
+
+          <!-- Benchmark VWAP Dashed Line -->
+          <path id="svgVwapLine" d="" fill="none" stroke="#B45309" stroke-width="2" stroke-dasharray="6 5" />
+
+          <!-- Market Mid-Price Solid Ink Line -->
+          <path id="svgMarketPriceLine" d="" fill="none" stroke="#111111" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" />
+
+          <!-- Vertical Active Slice Guideline -->
+          <line id="svgActiveGuideLine" x1="0" y1="28" x2="0" y2="305" stroke="#166534" stroke-width="1.5" stroke-dasharray="3 3" />
+
+          <!-- Interactive Buy Order Dots Layer -->
+          <g id="svgBuyDotsLayer"></g>
+        </svg>
+
+        <!-- Floating Hover Tooltip on Chart -->
+        <div id="chartHoverTooltip" class="hidden pointer-events-none absolute z-20 bg-ink-900 text-cream-50 rounded-xl p-3 text-xs font-mono shadow-xl border border-ink-700 w-72">
+          <!-- Populated dynamically on dot hover -->
+        </div>
+
+        <!-- Active Dot Callout Bar below chart -->
+        <div class="mt-3 p-3.5 rounded-xl stone-panel flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span id="activeDotBadge" class="px-3 py-1 rounded-lg bg-emerald-800 text-white font-mono text-xs font-bold">
+              BUY DOT #1
+            </span>
+            <div>
+              <div id="activeDotHeadline" class="text-sm font-bold text-ink-900">
+                10:02:15.140 EST &bull; Filled 28,000 Shares @ $138.52 (Passive/Midpoint Split)
+              </div>
+              <div id="activeDotSubline" class="text-xs text-ink-700 font-mono">
+                GMM Regime: High-Liquidity Mean-Reversion &bull; 30s Pred: +$0.09 &bull; Slippage Saved: +15.8 BPS
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="openPipelineModal()" class="px-4 py-2 rounded-lg text-xs font-mono font-semibold bg-ink-900 hover:bg-ink-700 text-white transition flex items-center gap-2 shadow-sm">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+              <span>Open 6-Stage Pipeline Popup Modal</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         SECTION 2: THE 6-STAGE EXECUTION INTELLIGENCE PIPELINE (INLINE + POPUP)
+         ======================================================================= -->
+    <section id="pipelineDashboardSection" class="space-y-5">
+      <!-- 6-Stage Pipeline Navigation Header -->
+      <div class="editorial-card rounded-2xl p-4 sm:p-5 bg-white">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-cream-200">
+          <div>
+            <div class="text-[11px] font-mono uppercase tracking-wider text-emerald-800 font-semibold">
+              6-Stage Multi-Agent Execution Pipeline &bull; Synchronized to Selected Buy Order Dot
+            </div>
+            <h3 class="font-serif text-2xl sm:text-3xl text-ink-900 mt-0.5" id="pipelineHeaderTitle">
+              Deep-Dive Execution Trace for Buy Order #1 (28,000 Shares @ $138.52)
+            </h3>
+          </div>
+          <div class="flex items-center gap-2 self-start md:self-auto">
+            <button onclick="setStageFilter('all')" id="btnFilterAllStages" class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-ink-900 text-white transition">
+              Show All 6 Stages (Grid)
+            </button>
+            <button onclick="setStageFilter('single')" id="btnFilterSingleStage" class="px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-cream-100 text-ink-700 hover:bg-cream-200 transition">
+              Focus Single Stage
+            </button>
+          </div>
+        </div>
+
+        <!-- 6-Stage Horizontal Stepper Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-4" id="stageStepperGrid">
+          <button onclick="focusPipelineStage(1)" id="stageStepBtn-1" class="text-left p-2.5 rounded-xl border transition-all">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="font-bold text-ink-900">STAGE 01</span>
+              <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-900 border border-blue-200 text-[10px]">GMM + NLP</span>
+            </div>
+            <div class="text-xs font-bold text-ink-900 mt-1 truncate">Market Behaviour</div>
+            <div class="text-[11px] text-ink-500 truncate">Gaussian Clustering</div>
+          </button>
+
+          <button onclick="focusPipelineStage(2)" id="stageStepBtn-2" class="text-left p-2.5 rounded-xl border transition-all">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="font-bold text-ink-900">STAGE 02</span>
+              <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-900 border border-blue-200 text-[10px]">96% Acc</span>
+            </div>
+            <div class="text-xs font-bold text-ink-900 mt-1 truncate">30s Price &amp; Liquidity</div>
+            <div class="text-[11px] text-ink-500 truncate">L2 Depth Forecast</div>
+          </button>
+
+          <button onclick="focusPipelineStage(3)" id="stageStepBtn-3" class="text-left p-2.5 rounded-xl border transition-all">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="font-bold text-ink-900">STAGE 03</span>
+              <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200 text-[10px]">Impact</span>
+            </div>
+            <div class="text-xs font-bold text-ink-900 mt-1 truncate">Fill Prob &amp; Impact</div>
+            <div class="text-[11px] text-ink-500 truncate">Almgren-Chriss Curve</div>
+          </button>
+
+          <button onclick="focusPipelineStage(4)" id="stageStepBtn-4" class="text-left p-2.5 rounded-xl border transition-all">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="font-bold text-ink-900">STAGE 04</span>
+              <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-900 border border-emerald-200 text-[10px]">RL Brain</span>
+            </div>
+            <div class="text-xs font-bold text-ink-900 mt-1 truncate">PPO RL Decision</div>
+            <div class="text-[11px] text-ink-500 truncate">BPS Reward Max</div>
+          </button>
+
+          <button onclick="focusPipelineStage(5)" id="stageStepBtn-5" class="text-left p-2.5 rounded-xl border transition-all">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="font-bold text-ink-900">STAGE 05</span>
+              <span class="px-1.5 py-0.5 rounded bg-purple-50 text-purple-900 border border-purple-200 text-[10px]">Router</span>
+            </div>
+            <div class="text-xs font-bold text-ink-900 mt-1 truncate">Smart Venue Router</div>
+            <div class="text-[11px] text-ink-500 truncate">NYSE / NASDAQ / Dark</div>
+          </button>
+
+          <button onclick="focusPipelineStage(6)" id="stageStepBtn-6" class="text-left p-2.5 rounded-xl border transition-all">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="font-bold text-ink-900">STAGE 06</span>
+              <span class="px-1.5 py-0.5 rounded bg-stone-200 text-ink-900 text-[10px]">LangGraph</span>
+            </div>
+            <div class="text-xs font-bold text-ink-900 mt-1 truncate">Execution Audit</div>
+            <div class="text-[11px] text-ink-500 truncate">-14 BPS Slippage</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- 6-Stage Cards Container (Rendered dynamically so both Inline Dashboard & Popup Modal share rich interactive content) -->
+      <div id="inlinePipelineStagesContainer" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Populated by renderSixStages() -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       POPUP MODAL: 6-STAGE EXECUTION INTELLIGENCE PIPELINE (OPENS ON DOT CLICK)
+       ========================================================================= -->
+  <div id="pipelinePopupModal" class="fixed inset-0 z-50 hidden bg-ink-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="editorial-card max-w-[1360px] w-full max-h-[92vh] rounded-2xl flex flex-col overflow-hidden shadow-2xl border-2 border-ink-900">
+      <!-- Modal Top Header -->
+      <div class="px-5 py-4 bg-ink-900 text-cream-50 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span id="modalDotBadge" class="px-3 py-1 rounded-lg bg-emerald-700 text-white font-mono text-xs font-bold">
+            BUY DOT #1
+          </span>
+          <div>
+            <div class="text-[11px] font-mono uppercase tracking-wider text-cream-300">
+              6-Stage Execution Intelligence Pipeline Inspector (Triggered by Buy Order Dot Click)
+            </div>
+            <h3 id="modalOrderTitle" class="font-serif text-2xl text-white">
+              Buy Order #1 @ 10:02:15.140 EST — 28,000 Shares Filled @ $138.52 (+15.8 BPS vs VWAP)
+            </h3>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Switch Dots right inside the Modal -->
+          <div class="hidden xl:flex items-center gap-1 mr-2" id="modalDotQuickSwitch"></div>
+          <button onclick="closePipelineModal()" class="px-3.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-mono font-semibold border border-white/20 transition">
+            ESC / Close Popup &times;
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body: All 6 Pipeline Stages Clearly Organized -->
+      <div id="modalPipelineStagesContainer" class="p-5 overflow-y-auto bg-cream-50 grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Populated by renderSixStages() -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 bg-white border-t border-cream-200 flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-ink-700">
+        <div>
+          Pipeline Orchestration: <strong class="text-ink-900">LangGraph Multi-Agent StateGraph</strong> &bull; End-to-End Decision Latency: <strong class="text-emerald-800">4.2 ms (Tick Path) / 110 ms (Macro News Path)</strong>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="stepToPrevBuyOrder()" class="px-3 py-1 rounded bg-cream-100 hover:bg-cream-200 text-ink-900 border border-cream-300">&larr; Prev Buy Dot</button>
+          <button onclick="stepToNextBuyOrder()" class="px-3 py-1 rounded bg-emerald-800 hover:bg-emerald-900 text-white">Next Buy Dot &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       INTERVIEW PITCH GUIDE MODAL
+       ========================================================================= -->
+  <div id="pitchGuideModal" class="fixed inset-0 z-50 hidden bg-ink-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="editorial-card max-w-3xl w-full rounded-2xl overflow-hidden shadow-2xl border border-ink-900">
+      <div class="px-5 py-4 bg-ink-900 text-cream-50 flex items-center justify-between">
+        <div>
+          <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-400">Interview Walkthrough Cheat-Sheet &bull; Nexus AI Showcase #2</div>
+          <h3 class="font-serif text-2xl text-white">How to Present the 6-Stage Algorithmic Trading System</h3>
+        </div>
+        <button onclick="closePitchModal()" class="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-xs font-mono text-white">Close</button>
+      </div>
+      <div class="p-5 space-y-3.5 text-xs text-ink-700 leading-relaxed max-h-[75vh] overflow-y-auto bg-cream-50">
+        <div class="p-3.5 rounded-xl bg-white border border-cream-200">
+          <div class="font-bold text-ink-900 font-mono mb-1">1. Problem Statement &amp; Institutional Goal</div>
+          <p>"When an institutional desk needs to buy 150,000 shares of a liquid tech stock like NVDA, dumping the order into the lit market causes severe price slippage and alerts high-frequency predatory traders. Standard VWAP/TWAP slices blindly on a fixed schedule. We built a 6-stage multi-agent execution system that adapts in real time—delivering a <strong>14.2 BPS reduction in slippage</strong> and outperforming VWAP by <strong>22%</strong> and TWAP by <strong>18%</strong> across 1.5M+ backtested trades."</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white border border-cream-200">
+          <div class="font-bold text-blue-900 font-mono mb-1">2. Stage 1 &amp; Stage 2: GMM Regime Clustering + 30-Second Price/Liquidity Predictor</div>
+          <p>"First, we combine unsupervised <strong>Gaussian Mixture Models (GMM)</strong> and <strong>Hidden Markov Models (HMM)</strong> on Level-2 Limit Order Book microstructure features (Order Book Imbalance, Kyle's Lambda, spread variance) with a <strong>LangChain</strong> macro/news ingestion pipeline that cuts regime-shift detection latency by <strong>450ms</strong>. Second, conditioned on the active regime cluster, our forecasting model predicts the next <strong>30 seconds of micro-price drift and L2 order book depth</strong> with <strong>96% tick-level accuracy</strong>."</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white border border-cream-200">
+          <div class="font-bold text-amber-900 font-mono mb-1">3. Stage 3 &amp; Stage 4: Fill Probability / Market Impact &rarr; PPO Reinforcement Learning Brain</div>
+          <p>"Third, our impact simulator uses an <strong>Almgren-Chriss + Hawkes Process</strong> formulation to estimate both fill probability $P(\text{Fill} \mid \Delta t \le 30\text{s})$ and how our own order size will move the market (temporary + permanent impact in BPS). Fourth, our <strong>PPO Actor-Critic Reinforcement Learning Brain</strong> ingests the GMM cluster, 30s price/liquidity forecast, and impact curve to maximize a BPS reward function—choosing the optimal slice size and aggressiveness."</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-white border border-cream-200">
+          <div class="font-bold text-emerald-900 font-mono mb-1">4. Stage 5 &amp; Stage 6: Smart Venue Router (NYSE, NASDAQ, Dark Pools, IEX)</div>
+          <p>"Finally, the child order is dispatched to our <strong>Smart Venue Router</strong>, which splits liquidity across <strong>NASDAQ</strong> (capturing maker rebates), <strong>NYSE ARCA</strong>, <strong>Institutional Dark Pools (Sigma X2 / UBS ATS)</strong> with Minimum Acceptable Quantity (MAQ) anti-gaming constraints, and <strong>IEX</strong> (350&mu;s speed-bump protection)."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       APPLICATION DATA & INTERACTIVE SIMULATION ENGINE
+       ========================================================================= -->
+  <script>
+    // UI State
+    let selectedDotIndex = 0; // 0..5 corresponding to Buy Order #1..#6
+    let openPopupOnDotClick = true; // Clicking a dot on the chart pops up the 6-stage modal
+    let stageViewMode = 'all'; // 'all' | 'single'
+    let focusedStageNumber = 1; // 1..6 when in single stage focus mode
+
+    // Continuous Market Mid-Price Curve & Benchmark VWAP Points (31 time ticks across 30-min execution window)
+    const marketTimeSeries = [
+      { t: '10:00', price: 138.68, vwap: 138.68 },
+      { t: '10:01', price: 138.60, vwap: 138.65 },
+      { t: '10:02', price: 138.52, vwap: 138.64, buyDotIdx: 0 }, // BUY DOT #1
+      { t: '10:03', price: 138.59, vwap: 138.63 },
+      { t: '10:04', price: 138.66, vwap: 138.64 },
+      { t: '10:05', price: 138.74, vwap: 138.67 },
+      { t: '10:06', price: 138.65, vwap: 138.67 },
+      { t: '10:07', price: 138.58, vwap: 138.66, buyDotIdx: 1 }, // BUY DOT #2
+      { t: '10:08', price: 138.71, vwap: 138.68 },
+      { t: '10:09', price: 138.88, vwap: 138.72 },
+      { t: '10:10', price: 139.04, vwap: 138.78 },
+      { t: '10:11', price: 139.12, vwap: 138.83 },
+      { t: '10:12', price: 138.95, vwap: 138.86 },
+      { t: '10:13', price: 138.79, vwap: 138.85, buyDotIdx: 2 }, // BUY DOT #3
+      { t: '10:14', price: 138.86, vwap: 138.86 },
+      { t: '10:15', price: 138.92, vwap: 138.88 },
+      { t: '10:16', price: 138.81, vwap: 138.87 },
+      { t: '10:17', price: 138.69, vwap: 138.85 },
+      { t: '10:18', price: 138.61, vwap: 138.83, buyDotIdx: 3 }, // BUY DOT #4
+      { t: '10:19', price: 138.72, vwap: 138.82 },
+      { t: '10:20', price: 138.84, vwap: 138.83 },
+      { t: '10:21', price: 138.96, vwap: 138.85 },
+      { t: '10:22', price: 138.89, vwap: 138.86 },
+      { t: '10:23', price: 138.74, vwap: 138.85 },
+      { t: '10:24', price: 138.63, vwap: 138.83, buyDotIdx: 4 }, // BUY DOT #5
+      { t: '10:25', price: 138.70, vwap: 138.82 },
+      { t: '10:26', price: 138.78, vwap: 138.82 },
+      { t: '10:27', price: 138.85, vwap: 138.83 },
+      { t: '10:28', price: 138.72, vwap: 138.82 },
+      { t: '10:29', price: 138.66, vwap: 138.84, buyDotIdx: 5 }, // BUY DOT #6
+      { t: '10:30', price: 138.89, vwap: 138.84 }
+    ];
+
+    // Background Market Regimes on the Chart
+    const chartRegimeZones = [
+      { startIdx: 0, endIdx: 8, name: 'GMM Cluster 1: Mean-Reverting Accumulation', color: '#EEF2FF', textColor: '#1E3A8A' },
+      { startIdx: 8, endIdx: 14, name: 'GMM Cluster 3: Macro News Volatility Spike', color: '#FEF3C7', textColor: '#92400E' },
+      { startIdx: 14, endIdx: 21, name: 'GMM Cluster 2: Institutional Dark Block Flow', color: '#ECFDF5', textColor: '#065F46' },
+      { startIdx: 21, endIdx: 30, name: 'GMM Cluster 1: Deep Liquidity Mean-Reversion', color: '#EEF2FF', textColor: '#1E3A8A' }
+    ];
+
+    // -------------------------------------------------------------------------
+    // DETAILED 6-STAGE PIPELINE DATA FOR EACH OF THE 6 BUY ORDER DOTS
+    // -------------------------------------------------------------------------
+    const buyExecutionOrders = [
+      // ===================== BUY DOT #1 =====================
+      {
+        id: 1,
+        label: 'Buy #1',
+        timestamp: '10:02:15.140 EST',
+        seriesIndex: 2,
+        execPrice: 138.52,
+        vwapAtExec: 138.64,
+        arrivalPrice: 138.68,
+        sharesExecuted: 28000,
+        cumulativeShares: 28000,
+        remainingShares: 122000,
+        bpsSavedVsArrival: '+15.8 BPS',
+        bpsSavedVsVwap: '+8.7 BPS',
+        orderStrategyTag: 'Dark Midpoint + Passive Lit Split',
+        // STAGE 1: GMM Market Behaviour & Clustering
+        stage1: {
+          activeClusterName: 'Cluster C1: High-Liquidity Mean-Reversion',
+          clusterConfidence: 0.84,
+          clusters: [
+            { name: 'C1: High-Liquidity Mean-Reverting', prob: 84, color: 'bg-emerald-700' },
+            { name: 'C2: Institutional Dark Accumulation', prob: 11, color: 'bg-blue-800' },
+            { name: 'C3: News Volatility / Spread Widening', prob: 3, color: 'bg-amber-600' },
+            { name: 'C4: Toxic HFT Adverse Selection', prob: 2, color: 'bg-rose-700' }
+          ],
+          gmmPoint: { x: 245, y: 145 }, // Coordinates inside the 2D GMM cluster plot
+          lobFeatures: {
+            obi: '+0.34 (Bid-Heavy Support)',
+            kyleLambda: '0.018 bps / 10k sh (Low Impact)',
+            spreadBps: '1.1 bps ($0.015)',
+            realizedVol30s: '11.4% Ann.'
+          },
+          langchainMacroSignal: {
+            headline: 'SOX Semiconductor Index +0.4%; TSMC CoWoS wafer allocation steady in morning dealer note.',
+            sentimentScore: '+0.42 (Constructive / Low Shock)',
+            latencyMs: '98 ms (Saved 450ms vs legacy polling)'
+          }
+        },
+        // STAGE 2: 30s Market Price & Liquidity Prediction
+        stage2: {
+          currentMid: 138.52,
+          predicted30sMid: 138.61,
+          predictedDriftBps: '+6.5 BPS Upward Rebound',
+          confidenceInterval95: '[$138.58, $138.64]',
+          horizonPoints: [
+            { sec: '0s (Now)', price: 138.52, low: 138.52, high: 138.52 },
+            { sec: '+5s', price: 138.54, low: 138.52, high: 138.56 },
+            { sec: '+10s', price: 138.56, low: 138.53, high: 138.59 },
+            { sec: '+15s', price: 138.58, low: 138.55, high: 138.61 },
+            { sec: '+20s', price: 138.60, low: 138.57, high: 138.63 },
+            { sec: '+30s', price: 138.61, low: 138.58, high: 138.64 }
+          ],
+          predictedLiquidity30s: '44,500 sh @ Best Bid/Mid (+28% Depth Replenishment)',
+          lobLevels: [
+            { level: 'L1 Touch', bidPrice: '$138.51', bidQty: 14200, askPrice: '$138.53', askQty: 6800 },
+            { level: 'L2 (-/+1t)', bidPrice: '$138.50', bidQty: 19500, askPrice: '$138.54', askQty: 8400 },
+            { level: 'L3 (-/+2t)', bidPrice: '$138.49', bidQty: 22100, askPrice: '$138.55', askQty: 11200 },
+            { level: 'L4 (-/+3t)', bidPrice: '$138.48', bidQty: 16800, askPrice: '$138.56', askQty: 14900 }
+          ]
+        },
+        // STAGE 3: Fill Probability & Market Impact
+        stage3: {
+          selectedTierIndex: 1,
+          tiers: [
+            { tier: 'Passive Bid (-1 Tick @ $138.50)', fillProb: '48.0%', tempImpact: '0.2 BPS', permImpact: '0.1 BPS', totalCost: '0.3 BPS', status: 'Too Slow (Misses +6.5 bps rebound)' },
+            { tier: 'Midpoint Peg + Lit Touch ($138.52)', fillProb: '94.2%', tempImpact: '1.1 BPS', permImpact: '0.6 BPS', totalCost: '1.7 BPS', status: 'OPTIMAL PARETO FRONTIER' },
+            { tier: 'Aggressive Market Sweep ($138.55)', fillProb: '99.9%', tempImpact: '7.4 BPS', permImpact: '3.2 BPS', totalCost: '10.6 BPS', status: 'Excessive Spread Crossing Cost' }
+          ],
+          impactSummary: 'Executing 28,000 shares via Midpoint Peg + Passive Touch yields a 94.2% 30-second fill probability while limiting total price deflection to 1.7 BPS (vs. 10.6 BPS for an aggressive sweep).'
+        },
+        // STAGE 4: PPO RL Brain Decision
+        stage4: {
+          stateVectorSummary: 's_t = [Regime=C1(0.84), dP_30s=+6.5bps, OBI=+0.34, P_fill=0.942, Rem_Inv=100%, Time_Rem=93%]',
+          chosenAction: 'Action B: Slice 28,000 Shares (18.7% Parent) via Midpoint Peg + NASDAQ Post-Only',
+          rewardScore: '+14.12 BPS Expected Net Reward',
+          candidateActions: [
+            { action: 'Action A: Wait / Defer Execution 30s', size: '0 sh', impactBps: '0.0 BPS', opportunityCost: '-6.5 BPS (Price Drifts Up)', qValue: '-6.50 BPS', selected: false },
+            { action: 'Action B: Midpoint Peg + Lit Touch Slice', size: '28,000 sh', impactBps: '-1.7 BPS', opportunityCost: '+15.8 BPS (Captures Dip)', qValue: '+14.12 BPS', selected: true },
+            { action: 'Action C: Aggressive Lit Book Sweep', size: '45,000 sh', impactBps: '-10.6 BPS', opportunityCost: '+15.8 BPS', qValue: '+5.20 BPS', selected: false }
+          ]
+        },
+        // STAGE 5: Smart Venue Router
+        stage5: {
+          routes: [
+            { venue: 'Dark Pools (Sigma X2 / UBS ATS)', orderType: 'Midpoint Peg (MAQ 2,000 sh)', pct: 45, shares: 12600, latency: '1.05 ms', feeRebate: '$0.0000 (Zero Spread)', fillRate: '96.5%' },
+            { venue: 'NASDAQ (INET Core)', orderType: 'Post-Only Limit @ $138.52', pct: 35, shares: 9800, latency: '0.41 ms', feeRebate: '+$0.0022/sh Maker Rebate', fillRate: '94.0%' },
+            { venue: 'NYSE (ARCA Book)', orderType: 'Hidden Reserve Iceberg', pct: 20, shares: 5600, latency: '0.64 ms', feeRebate: '+$0.0018/sh Maker Rebate', fillRate: '91.2%' },
+            { venue: 'IEX (350μs Speed Bump)', orderType: 'D-Limit Crumbling Quote', pct: 0, shares: 0, latency: '0.78 ms', feeRebate: 'Standby (Low Toxic Flow)', fillRate: '—' }
+          ]
+        }
+      },
+
+      // ===================== BUY DOT #2 =====================
+      {
+        id: 2,
+        label: 'Buy #2',
+        timestamp: '10:07:12.080 EST',
+        seriesIndex: 7,
+        execPrice: 138.58,
+        vwapAtExec: 138.66,
+        arrivalPrice: 138.68,
+        sharesExecuted: 26000,
+        cumulativeShares: 54000,
+        remainingShares: 96000,
+        bpsSavedVsArrival: '+14.5 BPS',
+        bpsSavedVsVwap: '+11.2 BPS',
+        orderStrategyTag: 'Pre-Breakout Liquidity Capture',
+        stage1: {
+          activeClusterName: 'Cluster C2: Institutional Dark Accumulation',
+          clusterConfidence: 0.79,
+          clusters: [
+            { name: 'C2: Institutional Dark Accumulation', prob: 79, color: 'bg-blue-800' },
+            { name: 'C1: High-Liquidity Mean-Reverting', prob: 14, color: 'bg-emerald-700' },
+            { name: 'C3: News Volatility / Spread Widening', prob: 5, color: 'bg-amber-600' },
+            { name: 'C4: Toxic HFT Adverse Selection', prob: 2, color: 'bg-rose-700' }
+          ],
+          gmmPoint: { x: 270, y: 120 },
+          lobFeatures: {
+            obi: '+0.48 (Strong Institutional Bid Absorption)',
+            kyleLambda: '0.022 bps / 10k sh',
+            spreadBps: '1.2 bps ($0.016)',
+            realizedVol30s: '13.1% Ann.'
+          },
+          langchainMacroSignal: {
+            headline: 'Hyperscaler capex guidance reaffirmed in morning SEC 8-K filing; institutional dark prints surging.',
+            sentimentScore: '+0.68 (Bullish Momentum Imminent)',
+            latencyMs: '104 ms (450ms faster than baseline)'
+          }
+        },
+        stage2: {
+          currentMid: 138.58,
+          predicted30sMid: 138.71,
+          predictedDriftBps: '+9.4 BPS Breakout Imminent',
+          confidenceInterval95: '[$138.67, $138.75]',
+          horizonPoints: [
+            { sec: '0s (Now)', price: 138.58, low: 138.58, high: 138.58 },
+            { sec: '+5s', price: 138.61, low: 138.59, high: 138.63 },
+            { sec: '+10s', price: 138.64, low: 138.61, high: 138.67 },
+            { sec: '+15s', price: 138.67, low: 138.63, high: 138.71 },
+            { sec: '+20s', price: 138.69, low: 138.65, high: 138.73 },
+            { sec: '+30s', price: 138.71, low: 138.67, high: 138.75 }
+          ],
+          predictedLiquidity30s: '39,200 sh @ Ask L1-L2 (Ask Liquidity Thinning Rapidly)',
+          lobLevels: [
+            { level: 'L1 Touch', bidPrice: '$138.57', bidQty: 18400, askPrice: '$138.59', askQty: 5200 },
+            { level: 'L2 (-/+1t)', bidPrice: '$138.56', bidQty: 21000, askPrice: '$138.60', askQty: 6900 },
+            { level: 'L3 (-/+2t)', bidPrice: '$138.55', bidQty: 17500, askPrice: '$138.61', askQty: 9100 },
+            { level: 'L4 (-/+3t)', bidPrice: '$138.54', bidQty: 15200, askPrice: '$138.62', askQty: 12400 }
+          ]
+        },
+        stage3: {
+          selectedTierIndex: 1,
+          tiers: [
+            { tier: 'Passive Bid (-1 Tick @ $138.56)', fillProb: '29.5%', tempImpact: '0.2 BPS', permImpact: '0.1 BPS', totalCost: '0.3 BPS', status: 'High Unfilled Risk Before Breakout' },
+            { tier: 'Dark Block + Lit IOC @ $138.58', fillProb: '92.8%', tempImpact: '1.4 BPS', permImpact: '0.8 BPS', totalCost: '2.2 BPS', status: 'OPTIMAL PARETO FRONTIER' },
+            { tier: 'Aggressive Sweep ($138.62)', fillProb: '99.9%', tempImpact: '8.9 BPS', permImpact: '4.0 BPS', totalCost: '12.9 BPS', status: 'Triggers Momentum Ignition' }
+          ],
+          impactSummary: 'Because Stage 2 predicts a +9.4 BPS breakout within 30 seconds, passive resting bids only have a 29.5% fill probability. Routing 26,000 shares to Dark Midpoint + Lit Touch locks in $138.58 at 2.2 BPS impact.'
+        },
+        stage4: {
+          stateVectorSummary: 's_t = [Regime=C2(0.79), dP_30s=+9.4bps, OBI=+0.48, P_fill=0.928, Rem_Inv=81.3%, Time_Rem=76%]',
+          chosenAction: 'Action B: Accelerated 26,000 Share Slice Before Ask Depletion',
+          rewardScore: '+15.40 BPS Expected Net Reward',
+          candidateActions: [
+            { action: 'Action A: Hold / Wait 30 Seconds', size: '0 sh', impactBps: '0.0 BPS', opportunityCost: '-9.4 BPS (Breakout Loss)', qValue: '-9.40 BPS', selected: false },
+            { action: 'Action B: Dark Midpoint + Lit IOC Slice', size: '26,000 sh', impactBps: '-2.2 BPS', opportunityCost: '+17.6 BPS Saved vs Post-Spike', qValue: '+15.40 BPS', selected: true },
+            { action: 'Action C: Full Lit Market Sweep', size: '50,000 sh', impactBps: '-12.9 BPS', opportunityCost: '+17.6 BPS', qValue: '+4.70 BPS', selected: false }
+          ]
+        },
+        stage5: {
+          routes: [
+            { venue: 'Dark Pools (Sigma X2 / Liquidnet)', orderType: 'Conditional Dark Block @ Mid', pct: 50, shares: 13000, latency: '1.12 ms', feeRebate: '$0.0000 (Zero Spread)', fillRate: '95.0%' },
+            { venue: 'NASDAQ (INET Core)', orderType: 'Lit Limit @ Touch ($138.58)', pct: 30, shares: 7800, latency: '0.42 ms', feeRebate: '+$0.0020/sh Maker Rebate', fillRate: '92.4%' },
+            { venue: 'IEX (350μs Speed Bump)', orderType: 'D-Limit Peg (Anti-Sniping)', pct: 20, shares: 5200, latency: '0.76 ms', feeRebate: '$0.0003/sh Flat', fillRate: '90.8%' },
+            { venue: 'NYSE (ARCA Book)', orderType: 'Standby Overflow', pct: 0, shares: 0, latency: '0.65 ms', feeRebate: '—', fillRate: '—' }
+          ]
+        }
+      },
+
+      // ===================== BUY DOT #3 =====================
+      {
+        id: 3,
+        label: 'Buy #3',
+        timestamp: '10:13:04.510 EST',
+        seriesIndex: 13,
+        execPrice: 138.79,
+        vwapAtExec: 138.85,
+        arrivalPrice: 138.68,
+        sharesExecuted: 18000,
+        cumulativeShares: 72000,
+        remainingShares: 78000,
+        bpsSavedVsArrival: '+13.6 BPS vs Spike Peak',
+        bpsSavedVsVwap: '+12.4 BPS',
+        orderStrategyTag: 'Post-Spike Pullback Capture (IEX Shielded)',
+        stage1: {
+          activeClusterName: 'Cluster C3: Macro News Volatility / Mean Pullback',
+          clusterConfidence: 0.76,
+          clusters: [
+            { name: 'C3: News Volatility / Pullback Stabilization', prob: 76, color: 'bg-amber-600' },
+            { name: 'C4: Toxic HFT Adverse Selection', prob: 12, color: 'bg-rose-700' },
+            { name: 'C2: Institutional Dark Accumulation', prob: 8, color: 'bg-blue-800' },
+            { name: 'C1: High-Liquidity Mean-Reverting', prob: 4, color: 'bg-emerald-700' }
+          ],
+          gmmPoint: { x: 145, y: 70 },
+          lobFeatures: {
+            obi: '+0.19 (Stabilizing After $139.12 Exhaustion)',
+            kyleLambda: '0.034 bps / 10k sh (Elevated Impact Sensitivity)',
+            spreadBps: '2.1 bps ($0.029)',
+            realizedVol30s: '21.8% Ann.'
+          },
+          langchainMacroSignal: {
+            headline: '10:10 EST Treasury yield uptick absorbed; RL Brain throttled buying at $139.12 peak & waited for $138.79 pullback.',
+            sentimentScore: '+0.15 (Volatility Decaying)',
+            latencyMs: '112 ms (Detected regime shift 450ms early)'
+          }
+        },
+        stage2: {
+          currentMid: 138.79,
+          predicted30sMid: 138.86,
+          predictedDriftBps: '+5.0 BPS Local Bottom Reversal',
+          confidenceInterval95: '[$138.81, $138.91]',
+          horizonPoints: [
+            { sec: '0s (Now)', price: 138.79, low: 138.79, high: 138.79 },
+            { sec: '+5s', price: 138.80, low: 138.77, high: 138.83 },
+            { sec: '+10s', price: 138.82, low: 138.78, high: 138.86 },
+            { sec: '+15s', price: 138.84, low: 138.80, high: 138.88 },
+            { sec: '+20s', price: 138.85, low: 138.80, high: 138.90 },
+            { sec: '+30s', price: 138.86, low: 138.81, high: 138.91 }
+          ],
+          predictedLiquidity30s: '29,400 sh @ Best Bid (Moderate Depth in Volatile Regime)',
+          lobLevels: [
+            { level: 'L1 Touch', bidPrice: '$138.78', bidQty: 9400, askPrice: '$138.80', askQty: 6100 },
+            { level: 'L2 (-/+1t)', bidPrice: '$138.77', bidQty: 12800, askPrice: '$138.81', askQty: 7900 },
+            { level: 'L3 (-/+2t)', bidPrice: '$138.76', bidQty: 14100, askPrice: '$138.82', askQty: 9500 },
+            { level: 'L4 (-/+3t)', bidPrice: '$138.75', bidQty: 11600, askPrice: '$138.83', askQty: 11200 }
+          ]
+        },
+        stage3: {
+          selectedTierIndex: 1,
+          tiers: [
+            { tier: 'Deep Passive Bid (-2 Ticks @ $138.76)', fillProb: '34.0%', tempImpact: '0.3 BPS', permImpact: '0.1 BPS', totalCost: '0.4 BPS', status: 'Low Fill Probability' },
+            { tier: 'IEX D-Limit + Dark Midpoint (18k sh)', fillProb: '88.5%', tempImpact: '1.6 BPS', permImpact: '0.7 BPS', totalCost: '2.3 BPS', status: 'OPTIMAL VOLATILITY SHIELD' },
+            { tier: 'Lit Sweep Across Spread (35k sh)', fillProb: '99.8%', tempImpact: '11.2 BPS', permImpact: '4.8 BPS', totalCost: '16.0 BPS', status: 'High Slippage in C3 Regime' }
+          ],
+          impactSummary: 'In Cluster C3 (Elevated Volatility), Kyle’s Lambda is higher (0.034). Downsizing the slice to 18,000 shares and routing via IEX Speed-Bump + Dark Midpoint keeps impact at 2.3 BPS.'
+        },
+        stage4: {
+          stateVectorSummary: 's_t = [Regime=C3(0.76), dP_30s=+5.0bps, OBI=+0.19, P_fill=0.885, Rem_Inv=64.0%, Time_Rem=56%]',
+          chosenAction: 'Action B: Conservative 18,000 Share Slice w/ IEX Crumbling-Quote Protection',
+          rewardScore: '+11.85 BPS Expected Net Reward',
+          candidateActions: [
+            { action: 'Action A: Pause Execution Completely', size: '0 sh', impactBps: '0.0 BPS', opportunityCost: '-4.2 BPS (Behind Schedule Risk)', qValue: '-4.20 BPS', selected: false },
+            { action: 'Action B: Reduced 18,000 sh IEX + Dark Slice', size: '18,000 sh', impactBps: '-2.3 BPS', opportunityCost: '+14.15 BPS vs $139.12 Peak', qValue: '+11.85 BPS', selected: true },
+            { action: 'Action C: Standard VWAP Unthrottled Slice', size: '32,000 sh', impactBps: '-9.8 BPS', opportunityCost: '+4.0 BPS', qValue: '-5.80 BPS', selected: false }
+          ]
+        },
+        stage5: {
+          routes: [
+            { venue: 'IEX (350μs Coiled-Fiber Speed Bump)', orderType: 'D-Limit Crumbling Quote Peg', pct: 45, shares: 8100, latency: '0.77 ms', feeRebate: 'Shields HFT Latency Arbitrage', fillRate: '91.5%' },
+            { venue: 'Dark Pools (Goldman Sigma X2)', orderType: 'Midpoint Block (MAQ 3,000 sh)', pct: 40, shares: 7200, latency: '1.08 ms', feeRebate: '$0.0000 (Zero Spread)', fillRate: '89.0%' },
+            { venue: 'NYSE (ARCA Book)', orderType: 'Discretionary Passive Peg', pct: 15, shares: 2700, latency: '0.63 ms', feeRebate: '+$0.0018/sh Maker Rebate', fillRate: '84.5%' },
+            { venue: 'NASDAQ (INET Core)', orderType: 'Throttled (High HFT Cancellation)', pct: 0, shares: 0, latency: '0.41 ms', feeRebate: 'Paused in C3 Regime', fillRate: '—' }
+          ]
+        }
+      },
+
+      // ===================== BUY DOT #4 =====================
+      {
+        id: 4,
+        label: 'Buy #4',
+        timestamp: '10:18:22.890 EST',
+        seriesIndex: 18,
+        execPrice: 138.61,
+        vwapAtExec: 138.83,
+        arrivalPrice: 138.68,
+        sharesExecuted: 32000,
+        cumulativeShares: 104000,
+        remainingShares: 46000,
+        bpsSavedVsArrival: '+16.4 BPS',
+        bpsSavedVsVwap: '+15.9 BPS',
+        orderStrategyTag: 'Maximum RL Conviction Dip Absorption',
+        stage1: {
+          activeClusterName: 'Cluster C1: Deep Liquidity Mean-Reversion Trough',
+          clusterConfidence: 0.89,
+          clusters: [
+            { name: 'C1: High-Liquidity Mean-Reverting', prob: 89, color: 'bg-emerald-700' },
+            { name: 'C2: Institutional Dark Accumulation', prob: 8, color: 'bg-blue-800' },
+            { name: 'C3: News Volatility / Spread Widening', prob: 2, color: 'bg-amber-600' },
+            { name: 'C4: Toxic HFT Adverse Selection', prob: 1, color: 'bg-rose-700' }
+          ],
+          gmmPoint: { x: 260, y: 155 },
+          lobFeatures: {
+            obi: '+0.56 (Massive Bid Replenishment at $138.60)',
+            kyleLambda: '0.015 bps / 10k sh (Deepest Book Window)',
+            spreadBps: '1.0 bps ($0.014)',
+            realizedVol30s: '9.8% Ann.'
+          },
+          langchainMacroSignal: {
+            headline: 'Institutional block buyer detected on dark tape; dealer gamma hedging pinning support at $138.60.',
+            sentimentScore: '+0.74 (High-Conviction Mean Reversion)',
+            latencyMs: '95 ms'
+          }
+        },
+        stage2: {
+          currentMid: 138.61,
+          predicted30sMid: 138.72,
+          predictedDriftBps: '+7.9 BPS Strong Rebound',
+          confidenceInterval95: '[$138.69, $138.75]',
+          horizonPoints: [
+            { sec: '0s (Now)', price: 138.61, low: 138.61, high: 138.61 },
+            { sec: '+5s', price: 138.63, low: 138.61, high: 138.65 },
+            { sec: '+10s', price: 138.66, low: 138.64, high: 138.68 },
+            { sec: '+15s', price: 138.68, low: 138.65, high: 138.71 },
+            { sec: '+20s', price: 138.70, low: 138.67, high: 138.73 },
+            { sec: '+30s', price: 138.72, low: 138.69, high: 138.75 }
+          ],
+          predictedLiquidity30s: '58,400 sh Available Across Dark + Lit Touch (+41% Depth Surge)',
+          lobLevels: [
+            { level: 'L1 Touch', bidPrice: '$138.60', bidQty: 24500, askPrice: '$138.62', askQty: 8100 },
+            { level: 'L2 (-/+1t)', bidPrice: '$138.59', bidQty: 26800, askPrice: '$138.63', askQty: 9400 },
+            { level: 'L3 (-/+2t)', bidPrice: '$138.58', bidQty: 21400, askPrice: '$138.64', askQty: 11800 },
+            { level: 'L4 (-/+3t)', bidPrice: '$138.57', bidQty: 18900, askPrice: '$138.65', askQty: 14200 }
+          ]
+        },
+        stage3: {
+          selectedTierIndex: 1,
+          tiers: [
+            { tier: 'Passive Bid (-1 Tick @ $138.59)', fillProb: '41.0%', tempImpact: '0.2 BPS', permImpact: '0.1 BPS', totalCost: '0.3 BPS', status: 'Leaves 19k sh Unfilled' },
+            { tier: 'Upsized Dark Block + NASDAQ/NYSE Touch', fillProb: '96.4%', tempImpact: '1.2 BPS', permImpact: '0.5 BPS', totalCost: '1.7 BPS', status: 'OPTIMAL HIGH-CONVICTION FILL' },
+            { tier: 'Market Order Sweep (32k sh)', fillProb: '99.9%', tempImpact: '6.8 BPS', permImpact: '2.9 BPS', totalCost: '9.7 BPS', status: 'Unnecessary Taker Fee' }
+          ],
+          impactSummary: 'With Kyle’s Lambda at its intraday low (0.015) and 58,400 shares of depth available, the RL model upsizes execution to 32,000 shares while incurring only 1.7 BPS impact.'
+        },
+        stage4: {
+          stateVectorSummary: 's_t = [Regime=C1(0.89), dP_30s=+7.9bps, OBI=+0.56, P_fill=0.964, Rem_Inv=52.0%, Time_Rem=40%]',
+          chosenAction: 'Action B: Upsize to 32,000 Shares (Largest Slice) at $138.61 Trough',
+          rewardScore: '+16.85 BPS Expected Net Reward (Peak Intraday Alpha)',
+          candidateActions: [
+            { action: 'Action A: Standard Fixed TWAP Slice (15k sh)', size: '15,000 sh', impactBps: '-0.9 BPS', opportunityCost: '+7.5 BPS (Under-utilizes Dip)', qValue: '+6.60 BPS', selected: false },
+            { action: 'Action B: Dynamic RL Upsized Slice (32k sh)', size: '32,000 sh', impactBps: '-1.7 BPS', opportunityCost: '+18.55 BPS Saved vs VWAP', qValue: '+16.85 BPS', selected: true },
+            { action: 'Action C: Sweep Remaining 78,000 sh at Once', size: '78,000 sh', impactBps: '-19.4 BPS', opportunityCost: '+18.55 BPS', qValue: '-0.85 BPS', selected: false }
+          ]
+        },
+        stage5: {
+          routes: [
+            { venue: 'Dark Pools (Sigma X2 / UBS ATS)', orderType: 'Block Crossing @ $138.61 Mid', pct: 50, shares: 16000, latency: '1.04 ms', feeRebate: '$0.0000 (Zero Spread)', fillRate: '98.1%' },
+            { venue: 'NASDAQ (INET Core)', orderType: 'Post-Only Limit @ $138.61', pct: 30, shares: 9600, latency: '0.40 ms', feeRebate: '+$0.0022/sh Maker Rebate', fillRate: '95.8%' },
+            { venue: 'NYSE (ARCA Book)', orderType: 'Lit Reserve Slice @ $138.61', pct: 20, shares: 6400, latency: '0.62 ms', feeRebate: '+$0.0019/sh Maker Rebate', fillRate: '94.2%' },
+            { venue: 'IEX (350μs Speed Bump)', orderType: 'Standby', pct: 0, shares: 0, latency: '0.75 ms', feeRebate: '—', fillRate: '—' }
+          ]
+        }
+      },
+
+      // ===================== BUY DOT #5 =====================
+      {
+        id: 5,
+        label: 'Buy #5',
+        timestamp: '10:24:09.320 EST',
+        seriesIndex: 24,
+        execPrice: 138.63,
+        vwapAtExec: 138.83,
+        arrivalPrice: 138.68,
+        sharesExecuted: 26000,
+        cumulativeShares: 130000,
+        remainingShares: 20000,
+        bpsSavedVsArrival: '+14.8 BPS',
+        bpsSavedVsVwap: '+14.4 BPS',
+        orderStrategyTag: 'Secondary Dip Harvest (NASDAQ + Dark Split)',
+        stage1: {
+          activeClusterName: 'Cluster C1: High-Liquidity Mean-Reversion',
+          clusterConfidence: 0.82,
+          clusters: [
+            { name: 'C1: High-Liquidity Mean-Reverting', prob: 82, color: 'bg-emerald-700' },
+            { name: 'C2: Institutional Dark Accumulation', prob: 12, color: 'bg-blue-800' },
+            { name: 'C3: News Volatility / Spread Widening', prob: 4, color: 'bg-amber-600' },
+            { name: 'C4: Toxic HFT Adverse Selection', prob: 2, color: 'bg-rose-700' }
+          ],
+          gmmPoint: { x: 235, y: 150 },
+          lobFeatures: {
+            obi: '+0.39 (Bid Replenishment After Minor Pullback)',
+            kyleLambda: '0.019 bps / 10k sh',
+            spreadBps: '1.1 bps ($0.015)',
+            realizedVol30s: '11.2% Ann.'
+          },
+          langchainMacroSignal: {
+            headline: 'Sector ETF creation baskets active on NYSE Arca; steady institutional passive bid support.',
+            sentimentScore: '+0.49 (Supportive Flow)',
+            latencyMs: '101 ms'
+          }
+        },
+        stage2: {
+          currentMid: 138.63,
+          predicted30sMid: 138.70,
+          predictedDriftBps: '+5.1 BPS Reversion to VWAP',
+          confidenceInterval95: '[$138.67, $138.73]',
+          horizonPoints: [
+            { sec: '0s (Now)', price: 138.63, low: 138.63, high: 138.63 },
+            { sec: '+5s', price: 138.64, low: 138.62, high: 138.66 },
+            { sec: '+10s', price: 138.66, low: 138.64, high: 138.68 },
+            { sec: '+15s', price: 138.68, low: 138.65, high: 138.71 },
+            { sec: '+20s', price: 138.69, low: 138.66, high: 138.72 },
+            { sec: '+30s', price: 138.70, low: 138.67, high: 138.73 }
+          ],
+          predictedLiquidity30s: '41,800 sh @ Best Bid/Mid (+24% Replenishment)',
+          lobLevels: [
+            { level: 'L1 Touch', bidPrice: '$138.62', bidQty: 15900, askPrice: '$138.64', askQty: 7400 },
+            { level: 'L2 (-/+1t)', bidPrice: '$138.61', bidQty: 18200, askPrice: '$138.65', askQty: 8900 },
+            { level: 'L3 (-/+2t)', bidPrice: '$138.60', bidQty: 19400, askPrice: '$138.66', askQty: 11200 },
+            { level: 'L4 (-/+3t)', bidPrice: '$138.59', bidQty: 15100, askPrice: '$138.67', askQty: 13600 }
+          ]
+        },
+        stage3: {
+          selectedTierIndex: 1,
+          tiers: [
+            { tier: 'Passive Bid (-1 Tick @ $138.61)', fillProb: '44.5%', tempImpact: '0.2 BPS', permImpact: '0.1 BPS', totalCost: '0.3 BPS', status: 'Partial Fill Risk' },
+            { tier: 'NASDAQ Maker + Dark Midpoint (26k sh)', fillProb: '93.8%', tempImpact: '1.1 BPS', permImpact: '0.5 BPS', totalCost: '1.6 BPS', status: 'OPTIMAL PARETO FRONTIER' },
+            { tier: 'Aggressive Crossing Spread', fillProb: '99.9%', tempImpact: '7.2 BPS', permImpact: '3.1 BPS', totalCost: '10.3 BPS', status: 'High Impact Penalty' }
+          ],
+          impactSummary: 'Executing 26,000 shares via NASDAQ Maker + Dark Midpoint captures a 93.8% fill probability at $138.63 while keeping total market impact at 1.6 BPS.'
+        },
+        stage4: {
+          stateVectorSummary: 's_t = [Regime=C1(0.82), dP_30s=+5.1bps, OBI=+0.39, P_fill=0.938, Rem_Inv=30.7%, Time_Rem=20%]',
+          chosenAction: 'Action B: Execute 26,000 Shares to Leave Only 20k Terminal Inventory',
+          rewardScore: '+13.80 BPS Expected Net Reward',
+          candidateActions: [
+            { action: 'Action A: Defer Until Final 5 Minutes', size: '0 sh', impactBps: '0.0 BPS', opportunityCost: '-8.2 BPS (Terminal Inventory Penalty)', qValue: '-8.20 BPS', selected: false },
+            { action: 'Action B: 26,000 sh NASDAQ + Dark Slice', size: '26,000 sh', impactBps: '-1.6 BPS', opportunityCost: '+15.4 BPS vs VWAP', qValue: '+13.80 BPS', selected: true },
+            { action: 'Action C: Dump All Remaining 46,000 sh', size: '46,000 sh', impactBps: '-11.4 BPS', opportunityCost: '+15.4 BPS', qValue: '+4.00 BPS', selected: false }
+          ]
+        },
+        stage5: {
+          routes: [
+            { venue: 'NASDAQ (INET Core)', orderType: 'Post-Only Limit @ $138.63', pct: 45, shares: 11700, latency: '0.41 ms', feeRebate: '+$0.0022/sh Maker Rebate', fillRate: '94.8%' },
+            { venue: 'Dark Pools (Sigma X2 / UBS ATS)', orderType: 'Midpoint Peg (MAQ 2,500 sh)', pct: 40, shares: 10400, latency: '1.06 ms', feeRebate: '$0.0000 (Zero Spread)', fillRate: '95.2%' },
+            { venue: 'NYSE (ARCA Book)', orderType: 'Lit Reserve @ $138.63', pct: 15, shares: 3900, latency: '0.63 ms', feeRebate: '+$0.0018/sh Maker Rebate', fillRate: '91.0%' },
+            { venue: 'IEX (350μs Speed Bump)', orderType: 'Standby', pct: 0, shares: 0, latency: '0.76 ms', feeRebate: '—', fillRate: '—' }
+          ]
+        }
+      },
+
+      // ===================== BUY DOT #6 =====================
+      {
+        id: 6,
+        label: 'Buy #6',
+        timestamp: '10:29:05.020 EST',
+        seriesIndex: 29,
+        execPrice: 138.66,
+        vwapAtExec: 138.84,
+        arrivalPrice: 138.68,
+        sharesExecuted: 20000,
+        cumulativeShares: 150000,
+        remainingShares: 0,
+        bpsSavedVsArrival: '+13.0 BPS',
+        bpsSavedVsVwap: '+13.0 BPS (Parent 100% Complete)',
+        orderStrategyTag: 'Terminal Inventory Completion before 10:30 Pop',
+        stage1: {
+          activeClusterName: 'Cluster C2: Pre-Close / Half-Hour Rebalance Flow',
+          clusterConfidence: 0.81,
+          clusters: [
+            { name: 'C2: Institutional Dark Accumulation', prob: 81, color: 'bg-blue-800' },
+            { name: 'C1: High-Liquidity Mean-Reverting', prob: 13, color: 'bg-emerald-700' },
+            { name: 'C3: News Volatility / Spread Widening', prob: 4, color: 'bg-amber-600' },
+            { name: 'C4: Toxic HFT Adverse Selection', prob: 2, color: 'bg-rose-700' }
+          ],
+          gmmPoint: { x: 265, y: 125 },
+          lobFeatures: {
+            obi: '+0.44 (Strong 10:30 Institutional Basket Buying)',
+            kyleLambda: '0.020 bps / 10k sh',
+            spreadBps: '1.1 bps ($0.015)',
+            realizedVol30s: '12.5% Ann.'
+          },
+          langchainMacroSignal: {
+            headline: '10:30 AM European close cross-flows entering US mega-cap tech; upward price sweep expected.',
+            sentimentScore: '+0.61 (Upward Drift Into 10:30)',
+            latencyMs: '99 ms'
+          }
+        },
+        stage2: {
+          currentMid: 138.66,
+          predicted30sMid: 138.89,
+          predictedDriftBps: '+16.6 BPS 10:30 Basket Surge',
+          confidenceInterval95: '[$138.83, $138.94]',
+          horizonPoints: [
+            { sec: '0s (Now)', price: 138.66, low: 138.66, high: 138.66 },
+            { sec: '+5s', price: 138.70, low: 138.68, high: 138.72 },
+            { sec: '+10s', price: 138.75, low: 138.72, high: 138.78 },
+            { sec: '+15s', price: 138.80, low: 138.76, high: 138.84 },
+            { sec: '+20s', price: 138.85, low: 138.80, high: 138.90 },
+            { sec: '+30s', price: 138.89, low: 138.83, high: 138.94 }
+          ],
+          predictedLiquidity30s: '36,500 sh @ Mid/Touch Before 10:30 Markup',
+          lobLevels: [
+            { level: 'L1 Touch', bidPrice: '$138.65', bidQty: 16400, askPrice: '$138.67', askQty: 6200 },
+            { level: 'L2 (-/+1t)', bidPrice: '$138.64', bidQty: 19100, askPrice: '$138.68', askQty: 7500 },
+            { level: 'L3 (-/+2t)', bidPrice: '$138.63', bidQty: 17800, askPrice: '$138.69', askQty: 9800 },
+            { level: 'L4 (-/+3t)', bidPrice: '$138.62', bidQty: 14900, askPrice: '$138.70', askQty: 11500 }
+          ]
+        },
+        stage3: {
+          selectedTierIndex: 1,
+          tiers: [
+            { tier: 'Passive Resting Bid ($138.64)', fillProb: '22.0%', tempImpact: '0.2 BPS', permImpact: '0.1 BPS', totalCost: '0.3 BPS', status: 'Fails Terminal Deadline Constraint' },
+            { tier: 'Multi-Venue Dark + NYSE/NASDAQ IOC', fillProb: '98.5%', tempImpact: '1.3 BPS', permImpact: '0.6 BPS', totalCost: '1.9 BPS', status: 'COMPLETES 150,000 SH PARENT ORDER' },
+            { tier: 'Wait Until 10:30:00 Market On Close', fillProb: '100.0%', tempImpact: '9.5 BPS', permImpact: '7.1 BPS', totalCost: '16.6 BPS', status: 'Pays $138.89 Surge Price' }
+          ],
+          impactSummary: 'With only 60 seconds left in the execution window and a +16.6 BPS 10:30 basket surge predicted, the RL Brain prioritizes 98.5% fill certainty across Dark + NYSE/NASDAQ at $138.66.'
+        },
+        stage4: {
+          stateVectorSummary: 's_t = [Regime=C2(0.81), dP_30s=+16.6bps, OBI=+0.44, P_fill=0.985, Rem_Inv=13.3%, Time_Rem=3%]',
+          chosenAction: 'Action B: Complete Final 20,000 Shares Ahead of 10:30 Surge',
+          rewardScore: '+14.70 BPS Expected Net Reward (100% Parent Completion)',
+          candidateActions: [
+            { action: 'Action A: Passive Bid (Risk Mandatory Sweep at 10:30)', size: '20,000 sh', impactBps: '-16.6 BPS', opportunityCost: 'Fails SLA', qValue: '-16.60 BPS', selected: false },
+            { action: 'Action B: Synchronized Multi-Venue Completion', size: '20,000 sh', impactBps: '-1.9 BPS', opportunityCost: '+16.6 BPS Saved vs 10:30', qValue: '+14.70 BPS', selected: true },
+            { action: 'Action C: Single-Venue Lit Sweep', size: '20,000 sh', impactBps: '-6.8 BPS', opportunityCost: '+16.6 BPS', qValue: '+9.80 BPS', selected: false }
+          ]
+        },
+        stage5: {
+          routes: [
+            { venue: 'NASDAQ (INET Core)', orderType: 'Lit Limit / IOC @ $138.66', pct: 40, shares: 8000, latency: '0.41 ms', feeRebate: '+$0.0020/sh Maker Rebate', fillRate: '99.1%' },
+            { venue: 'NYSE (ARCA Book)', orderType: 'Lit Depth Capture @ $138.66', pct: 35, shares: 7000, latency: '0.64 ms', feeRebate: '+$0.0018/sh Maker Rebate', fillRate: '98.4%' },
+            { venue: 'Dark Pools (Sigma X2 / UBS ATS)', orderType: 'Immediate Midpoint Cross', pct: 25, shares: 5000, latency: '1.07 ms', feeRebate: '$0.0000 (Zero Spread)', fillRate: '97.8%' },
+            { venue: 'IEX (350μs Speed Bump)', orderType: 'Completed', pct: 0, shares: 0, latency: '0.76 ms', feeRebate: '—', fillRate: '—' }
+          ]
+        }
+      }
+    ];
+
+    // -------------------------------------------------------------------------
+    // CHART COORDINATE HELPERS & SVG MARKET CHART RENDERING
+    // -------------------------------------------------------------------------
+    const CHART_LEFT = 65;
+    const CHART_RIGHT = 1090;
+    const CHART_TOP = 32;
+    const CHART_BOTTOM = 305;
+    const PRICE_MIN = 138.40;
+    const PRICE_MAX = 139.20;
+
+    function getChartX(idx) {
+      const totalIntervals = marketTimeSeries.length - 1;
+      return CHART_LEFT + (idx / totalIntervals) * (CHART_RIGHT - CHART_LEFT);
+    }
+
+    function getChartY(price) {
+      const ratio = (price - PRICE_MIN) / (PRICE_MAX - PRICE_MIN);
+      return CHART_BOTTOM - ratio * (CHART_BOTTOM - CHART_TOP);
+    }
+
+    function renderTopDotPills() {
+      const pillContainer = document.getElementById('buyDotSelectorPills');
+      const modalSwitchContainer = document.getElementById('modalDotQuickSwitch');
+      pillContainer.innerHTML = '';
+      if (modalSwitchContainer) modalSwitchContainer.innerHTML = '';
+
+      buyExecutionOrders.forEach((ord, idx) => {
+        const isSelected = (idx === selectedDotIndex);
+
+        // Main Header Pill
+        const btn = document.createElement('button');
+        btn.onclick = () => selectBuyDot(idx, false);
+        btn.className = `px-3 py-1.5 rounded-xl text-xs font-mono font-semibold border transition flex items-center gap-1.5 ${
+          isSelected
+            ? 'bg-emerald-800 text-white border-emerald-900 shadow-sm'
+            : 'bg-cream-50 hover:bg-cream-100 text-ink-900 border-cream-200'
+        }`;
+        btn.innerHTML = `
+          <span class="w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-700'}"></span>
+          <span>${ord.label}: $${ord.execPrice.toFixed(2)}</span>
+          <span class="text-[10px] ${isSelected ? 'text-emerald-200' : 'text-ink-500'}">(${(ord.sharesExecuted/1000).toFixed(0)}k sh)</span>
+        `;
+        pillContainer.appendChild(btn);
+
+        // Modal Header Quick Switch Pill
+        if (modalSwitchContainer) {
+          const mBtn = document.createElement('button');
+          mBtn.onclick = () => selectBuyDot(idx, false);
+          mBtn.className = `px-2.5 py-1 rounded text-[11px] font-mono transition ${
+            isSelected
+              ? 'bg-emerald-700 text-white font-bold'
+              : 'bg-white/10 hover:bg-white/20 text-cream-200'
+          }`;
+          mBtn.textContent = `${ord.label} ($${ord.execPrice.toFixed(2)})`;
+          modalSwitchContainer.appendChild(mBtn);
+        }
+      });
+    }
+
+    function renderMarketChart() {
+      const regimeBandsG = document.getElementById('svgRegimeBands');
+      const gridLinesG = document.getElementById('svgGridLines');
+      const buyDotsG = document.getElementById('svgBuyDotsLayer');
+
+      regimeBandsG.innerHTML = '';
+      gridLinesG.innerHTML = '';
+      buyDotsG.innerHTML = '';
+
+      // 1. Render Background GMM Regime Zones
+      chartRegimeZones.forEach(zone => {
+        const x1 = getChartX(zone.startIdx);
+        const x2 = getChartX(zone.endIdx);
+        const width = x2 - x1;
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x1);
+        rect.setAttribute('y', CHART_TOP);
+        rect.setAttribute('width', width);
+        rect.setAttribute('height', CHART_BOTTOM - CHART_TOP);
+        rect.setAttribute('fill', zone.color);
+        rect.setAttribute('opacity', '0.65');
+        regimeBandsG.appendChild(rect);
+
+        // Top Label for Regime Zone
+        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        label.setAttribute('x', x1 + width / 2);
+        label.setAttribute('y', CHART_TOP + 15);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('fill', zone.textColor);
+        label.setAttribute('font-size', '9.5');
+        label.setAttribute('font-weight', '600');
+        label.setAttribute('font-family', 'JetBrains Mono, monospace');
+        label.textContent = zone.name;
+        regimeBandsG.appendChild(label);
+      });
+
+      // 2. Render Horizontal Price Grid Lines & Y-Axis Ticks
+      const priceTicks = [138.45, 138.60, 138.75, 138.90, 139.05, 139.20];
+      priceTicks.forEach(p => {
+        const y = getChartY(p);
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', CHART_LEFT);
+        line.setAttribute('y1', y);
+        line.setAttribute('x2', CHART_RIGHT);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', '#E4E0D8');
+        line.setAttribute('stroke-width', '1');
+        gridLinesG.appendChild(line);
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', CHART_LEFT - 10);
+        txt.setAttribute('y', y + 4);
+        txt.setAttribute('text-anchor', 'end');
+        txt.setAttribute('fill', '#6E6A63');
+        txt.setAttribute('font-size', '10.5');
+        txt.setAttribute('font-family', 'JetBrains Mono, monospace');
+        txt.textContent = `$${p.toFixed(2)}`;
+        gridLinesG.appendChild(txt);
+      });
+
+      // X-Axis Time Labels
+      marketTimeSeries.forEach((pt, idx) => {
+        if (idx % 5 === 0) {
+          const x = getChartX(idx);
+          const tLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          tLabel.setAttribute('x', x);
+          tLabel.setAttribute('y', CHART_BOTTOM + 22);
+          tLabel.setAttribute('text-anchor', 'middle');
+          tLabel.setAttribute('fill', '#6E6A63');
+          tLabel.setAttribute('font-size', '10.5');
+          tLabel.setAttribute('font-family', 'JetBrains Mono, monospace');
+          tLabel.textContent = `${pt.t} EST`;
+          gridLinesG.appendChild(tLabel);
+        }
+      });
+
+      // 3. Build SVG Path for Market Mid-Price & Benchmark VWAP
+      let pricePathD = '';
+      let vwapPathD = '';
+      marketTimeSeries.forEach((pt, idx) => {
+        const x = getChartX(idx);
+        const yPrice = getChartY(pt.price);
+        const yVwap = getChartY(pt.vwap);
+        if (idx === 0) {
+          pricePathD += `M ${x} ${yPrice}`;
+          vwapPathD += `M ${x} ${yVwap}`;
+        } else {
+          pricePathD += ` L ${x} ${yPrice}`;
+          vwapPathD += ` L ${x} ${yVwap}`;
+        }
+      });
+
+      document.getElementById('svgMarketPriceLine').setAttribute('d', pricePathD);
+      document.getElementById('svgVwapLine').setAttribute('d', vwapPathD);
+
+      const areaD = `${pricePathD} L ${getChartX(marketTimeSeries.length - 1)} ${CHART_BOTTOM} L ${CHART_LEFT} ${CHART_BOTTOM} Z`;
+      document.getElementById('svgPriceArea').setAttribute('d', areaD);
+
+      // 4. Update Vertical Active Guide Line for Currently Selected Buy Dot
+      const activeOrder = buyExecutionOrders[selectedDotIndex];
+      const activeX = getChartX(activeOrder.seriesIndex);
+      const guideLine = document.getElementById('svgActiveGuideLine');
+      guideLine.setAttribute('x1', activeX);
+      guideLine.setAttribute('x2', activeX);
+
+      // 5. Render the 6 Interactive Buy Order Dots on the Market Price Line
+      buyExecutionOrders.forEach((ord, idx) => {
+        const cx = getChartX(ord.seriesIndex);
+        const cy = getChartY(ord.execPrice);
+        const isSelected = (idx === selectedDotIndex);
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'buy-dot-group');
+        g.onclick = () => selectBuyDot(idx, true);
+        g.onmouseenter = (e) => showDotTooltip(e, ord);
+        g.onmouseleave = () => hideDotTooltip();
+
+        // Animated Pulse Halo
+        const pulseCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        pulseCircle.setAttribute('cx', cx);
+        pulseCircle.setAttribute('cy', cy);
+        pulseCircle.setAttribute('r', isSelected ? '14' : '9');
+        pulseCircle.setAttribute('fill', '#166534');
+        pulseCircle.setAttribute('class', 'buy-dot-pulse');
+        g.appendChild(pulseCircle);
+
+        // Selected Outer Ring
+        if (isSelected) {
+          const selRing = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          selRing.setAttribute('cx', cx);
+          selRing.setAttribute('cy', cy);
+          selRing.setAttribute('r', '15');
+          selRing.setAttribute('fill', 'none');
+          selRing.setAttribute('stroke', '#111111');
+          selRing.setAttribute('stroke-width', '2.5');
+          g.appendChild(selRing);
+        }
+
+        // Main Green Buy Dot Circle
+        const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        dot.setAttribute('cx', cx);
+        dot.setAttribute('cy', cy);
+        dot.setAttribute('r', isSelected ? '9.5' : '7.5');
+        dot.setAttribute('fill', isSelected ? '#15803D' : '#166534');
+        dot.setAttribute('stroke', '#FFFFFF');
+        dot.setAttribute('stroke-width', '2.5');
+        dot.setAttribute('filter', 'url(#dotShadow)');
+        g.appendChild(dot);
+
+        // Callout Pill Label Below/Above the Buy Dot
+        const badgeW = 92;
+        const badgeH = 32;
+        const badgeX = cx - badgeW / 2;
+        const badgeY = cy + 16;
+
+        const pillRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        pillRect.setAttribute('x', badgeX);
+        pillRect.setAttribute('y', badgeY);
+        pillRect.setAttribute('width', badgeW);
+        pillRect.setAttribute('height', badgeH);
+        pillRect.setAttribute('rx', '6');
+        pillRect.setAttribute('fill', isSelected ? '#111111' : '#FFFFFF');
+        pillRect.setAttribute('stroke', isSelected ? '#111111' : '#166534');
+        pillRect.setAttribute('stroke-width', '1.5');
+        g.appendChild(pillRect);
+
+        const pillLine1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        pillLine1.setAttribute('x', cx);
+        pillLine1.setAttribute('y', badgeY + 13);
+        pillLine1.setAttribute('text-anchor', 'middle');
+        pillLine1.setAttribute('fill', isSelected ? '#FFFFFF' : '#111111');
+        pillLine1.setAttribute('font-size', '9.5');
+        pillLine1.setAttribute('font-weight', '700');
+        pillLine1.setAttribute('font-family', 'JetBrains Mono, monospace');
+        pillLine1.textContent = `${ord.label} • $${ord.execPrice.toFixed(2)}`;
+        g.appendChild(pillLine1);
+
+        const pillLine2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        pillLine2.setAttribute('x', cx);
+        pillLine2.setAttribute('y', badgeY + 25);
+        pillLine2.setAttribute('text-anchor', 'middle');
+        pillLine2.setAttribute('fill', isSelected ? '#86EFAC' : '#166534');
+        pillLine2.setAttribute('font-size', '8.5');
+        pillLine2.setAttribute('font-weight', '600');
+        pillLine2.setAttribute('font-family', 'JetBrains Mono, monospace');
+        pillLine2.textContent = `${(ord.sharesExecuted/1000).toFixed(0)}k sh (${ord.bpsSavedVsVwap.split(' ')[0]} bps)`;
+        g.appendChild(pillLine2);
+
+        buyDotsG.appendChild(g);
+      });
+
+      // Update Active Callout Bar below chart
+      document.getElementById('activeDotBadge').textContent = `BUY DOT #${activeOrder.id}`;
+      document.getElementById('activeDotHeadline').textContent =
+        `${activeOrder.timestamp} • Filled ${activeOrder.sharesExecuted.toLocaleString()} Shares @ $${activeOrder.execPrice.toFixed(2)} (${activeOrder.orderStrategyTag})`;
+      document.getElementById('activeDotSubline').textContent =
+        `${activeOrder.stage1.activeClusterName} • 30s Forecast: $${activeOrder.stage2.predicted30sMid.toFixed(2)} (${activeOrder.stage2.predictedDriftBps}) • Saved: ${activeOrder.bpsSavedVsArrival}`;
+    }
+
+    function showDotTooltip(evt, ord) {
+      const tooltip = document.getElementById('chartHoverTooltip');
+      tooltip.classList.remove('hidden');
+      tooltip.innerHTML = `
+        <div class="flex items-center justify-between border-b border-ink-700 pb-1.5 mb-1.5">
+          <span class="font-bold text-emerald-400">● ${ord.label} (${ord.timestamp})</span>
+          <span class="px-1.5 py-0.5 rounded bg-emerald-900 text-emerald-200 text-[10px]">${ord.bpsSavedVsArrival}</span>
+        </div>
+        <div class="space-y-1 text-[11px]">
+          <div class="flex justify-between"><span class="text-cream-300">Fill Price / Qty:</span><span class="text-white font-bold">$${ord.execPrice.toFixed(2)} (${ord.sharesExecuted.toLocaleString()} sh)</span></div>
+          <div class="flex justify-between"><span class="text-cream-300">GMM Cluster:</span><span class="text-white">${ord.stage1.activeClusterName.split(':')[0]}</span></div>
+          <div class="flex justify-between"><span class="text-cream-300">30s Forecast:</span><span class="text-emerald-300">$${ord.stage2.predicted30sMid.toFixed(2)}</span></div>
+          <div class="flex justify-between"><span class="text-cream-300">RL Reward:</span><span class="text-amber-300">${ord.stage4.rewardScore.split(' ')[0]} BPS</span></div>
+        </div>
+        <div class="mt-2 pt-1.5 border-t border-ink-700 text-[10px] text-emerald-300 text-center font-semibold">
+          Click Dot to Launch 6-Stage Pipeline &rarr;
+        </div>
+      `;
+
+      const containerRect = document.getElementById('marketChartSvg').parentElement.getBoundingClientRect();
+      let left = evt.clientX - containerRect.left - 140;
+      let top = evt.clientY - containerRect.top - 155;
+      if (left < 12) left = 12;
+      if (left > containerRect.width - 295) left = containerRect.width - 295;
+      if (top < 10) top = evt.clientY - containerRect.top + 24;
+
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    }
+
+    function hideDotTooltip() {
+      document.getElementById('chartHoverTooltip').classList.add('hidden');
+    }
+
+    // -------------------------------------------------------------------------
+    // SELECTING A BUY ORDER DOT & RENDERING THE 6 PIPELINE STAGES
+    // -------------------------------------------------------------------------
+    function selectBuyDot(idx, clickedDirectlyOnChartDot) {
+      selectedDotIndex = idx;
+      renderTopDotPills();
+      renderMarketChart();
+      renderSixStages();
+
+      const ord = buyExecutionOrders[idx];
+      document.getElementById('pipelineHeaderTitle').textContent =
+        `Deep-Dive 6-Stage Execution Trace for ${ord.label} (${ord.sharesExecuted.toLocaleString()} Shares @ $${ord.execPrice.toFixed(2)} • ${ord.timestamp})`;
+      document.getElementById('modalDotBadge').textContent = `BUY DOT #${ord.id}`;
+      document.getElementById('modalOrderTitle').textContent =
+        `${ord.label} @ ${ord.timestamp} — ${ord.sharesExecuted.toLocaleString()} Shares Filled @ $${ord.execPrice.toFixed(2)} (${ord.bpsSavedVsArrival} Saved)`;
+
+      // If the user clicked directly on a green Buy Dot on the market chart and popup mode is active, open the 6-stage popup modal!
+      if (clickedDirectlyOnChartDot && openPopupOnDotClick) {
+        openPipelineModal();
+      }
+    }
+
+    function stepToNextBuyOrder() {
+      const nextIdx = (selectedDotIndex + 1) % buyExecutionOrders.length;
+      selectBuyDot(nextIdx, false);
+    }
+
+    function stepToPrevBuyOrder() {
+      const prevIdx = (selectedDotIndex - 1 + buyExecutionOrders.length) % buyExecutionOrders.length;
+      selectBuyDot(prevIdx, false);
+    }
+
+    function togglePopupOnDotClick() {
+      openPopupOnDotClick = !openPopupOnDotClick;
+      const indicator = document.getElementById('popupModeIndicator');
+      const label = document.getElementById('popupModeLabel');
+      if (openPopupOnDotClick) {
+        indicator.className = 'w-2 h-2 rounded-full bg-emerald-700';
+        label.textContent = 'Click Dot Opens 6-Stage Popup: ON';
+      } else {
+        indicator.className = 'w-2 h-2 rounded-full bg-stone-400';
+        label.textContent = 'Click Dot Opens 6-Stage Popup: OFF (Inline)';
+      }
+    }
+
+    function openPipelineModal() {
+      document.getElementById('pipelinePopupModal').classList.remove('hidden');
+    }
+
+    function closePipelineModal() {
+      document.getElementById('pipelinePopupModal').classList.add('hidden');
+    }
+
+    function setStageFilter(mode) {
+      stageViewMode = mode;
+      const btnAll = document.getElementById('btnFilterAllStages');
+      const btnSingle = document.getElementById('btnFilterSingleStage');
+      if (mode === 'all') {
+        btnAll.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-ink-900 text-white transition';
+        btnSingle.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-cream-100 text-ink-700 hover:bg-cream-200 transition';
+      } else {
+        btnSingle.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-ink-900 text-white transition';
+        btnAll.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-cream-100 text-ink-700 hover:bg-cream-200 transition';
+      }
+      updateStageStepperButtons();
+      renderSixStages();
+    }
+
+    function focusPipelineStage(stageNum) {
+      focusedStageNumber = stageNum;
+      stageViewMode = 'single';
+      setStageFilter('single');
+    }
+
+    function updateStageStepperButtons() {
+      for (let i = 1; i <= 6; i++) {
+        const btn = document.getElementById(`stageStepBtn-${i}`);
+        if (stageViewMode === 'single' && i === focusedStageNumber) {
+          btn.className = 'text-left p-2.5 rounded-xl border-2 border-ink-900 bg-cream-100 shadow-sm transition-all';
+        } else {
+          btn.className = 'text-left p-2.5 rounded-xl border border-cream-200 bg-cream-50 hover:bg-cream-100 transition-all';
+        }
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // BUILD THE 6 STAGES HTML (USED BY BOTH INLINE DASHBOARD & POPUP MODAL)
+    // -------------------------------------------------------------------------
+    function buildSixStagesHtml(ord, forceAllStages) {
+      const showStage = (n) => forceAllStages || stageViewMode === 'all' || focusedStageNumber === n;
+      const colSpanClass = (!forceAllStages && stageViewMode === 'single') ? 'lg:col-span-12' : 'lg:col-span-6';
+
+      // Build 30s Forecast SVG Polyline for Stage 2
+      const s2Pts = ord.stage2.horizonPoints;
+      const s2Min = Math.min(...s2Pts.map(p => p.low)) - 0.02;
+      const s2Max = Math.max(...s2Pts.map(p => p.high)) + 0.02;
+      const s2X = (i) => 40 + (i / (s2Pts.length - 1)) * 310;
+      const s2Y = (val) => 115 - ((val - s2Min) / (s2Max - s2Min)) * 90;
+
+      const s2MidLine = s2Pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${s2X(i)} ${s2Y(p.price)}`).join(' ');
+      const s2UpperPts = s2Pts.map((p, i) => `${s2X(i)},${s2Y(p.high)}`).join(' ');
+      const s2LowerPts = [...s2Pts].reverse().map((p, revI) => {
+        const origI = s2Pts.length - 1 - revI;
+        return `${s2X(origI)},${s2Y(p.low)}`;
+      }).join(' ');
+
+      // LangGraph State JSON for Stage 6
+      const langGraphJson = JSON.stringify({
+        parent_order_id: "ORD-NVDA-20261104-INST",
+        slice_id: `SLICE-0${ord.id}`,
+        timestamp_est: ord.timestamp,
+        agent_1_regime_clustering: {
+          model: "GaussianMixture(n_components=4) + HMM_Transition",
+          active_regime: ord.stage1.activeClusterName,
+          posterior_probability: ord.stage1.clusterConfidence,
+          langchain_macro_latency_ms: ord.stage1.langchainMacroSignal.latencyMs
+        },
+        agent_2_lob_forecaster_30s: {
+          current_mid_usd: ord.stage2.currentMid,
+          predicted_30s_mid_usd: ord.stage2.predicted30sMid,
+          expected_drift: ord.stage2.predictedDriftBps,
+          tick_validation_accuracy: "96.0%"
+        },
+        agent_3_impact_and_fill_sim: {
+          chosen_tier: ord.stage3.tiers[ord.stage3.selectedTierIndex].tier,
+          fill_prob_30s: ord.stage3.tiers[ord.stage3.selectedTierIndex].fillProb,
+          expected_market_impact_bps: ord.stage3.tiers[ord.stage3.selectedTierIndex].totalCost
+        },
+        agent_4_ppo_rl_brain: {
+          selected_action: ord.stage4.chosenAction,
+          shares_sliced: ord.sharesExecuted,
+          expected_reward_bps: ord.stage4.rewardScore
+        },
+        agent_5_smart_venue_router: ord.stage5.routes.filter(r => r.pct > 0).map(r => ({
+          venue: r.venue,
+          allocation_pct: `${r.pct}%`,
+          shares: r.shares
+        }))
+      }, null, 2);
+
+      let html = '';
+
+      // ==================== STAGE 1 CARD ====================
+      if (showStage(1)) {
+        html += `
+        <div class="${colSpanClass} editorial-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between border-b border-cream-200 pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-lg bg-blue-900 text-white font-mono text-xs font-bold flex items-center justify-center">01</span>
+                <div>
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-blue-900 font-semibold">Stage 1 &bull; Unsupervised Clustering + NLP</div>
+                  <h4 class="font-serif text-xl text-ink-900">Market Behaviour &amp; Regime Clustering (GMM + HMM)</h4>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-blue-50 text-blue-900 border border-blue-200">
+                P = ${(ord.stage1.clusterConfidence * 100).toFixed(0)}% Confidence
+              </span>
+            </div>
+
+            <!-- 2D Gaussian Mixture Cluster Plot + Posterior Probabilities -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 mt-4 items-center">
+              <!-- Left: 2D GMM Ellipses SVG -->
+              <div class="sm:col-span-6 code-panel rounded-xl p-3">
+                <div class="text-[10px] font-mono text-ink-500 uppercase mb-1 flex justify-between">
+                  <span>GMM 2D Latent Space (OBI vs Volatility)</span>
+                  <span class="text-emerald-800 font-bold">● ${ord.label}</span>
+                </div>
+                <svg viewBox="0 0 340 190" class="w-full h-auto bg-white rounded-lg border border-cream-200">
+                  <!-- Axes -->
+                  <line x1="35" y1="165" x2="325" y2="165" stroke="#D0C9BD" stroke-width="1" />
+                  <line x1="35" y1="15" x2="35" y2="165" stroke="#D0C9BD" stroke-width="1" />
+                  <text x="180" y="183" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono" fill="#6E6A63">Order Book Imbalance (OBI) &rarr;</text>
+                  <text x="12" y="90" text-anchor="middle" font-size="8.5" font-family="JetBrains Mono" fill="#6E6A63" transform="rotate(-90 12 90)">Micro-Volatility &rarr;</text>
+
+                  <!-- 4 Gaussian Mixture Covariance Ellipses -->
+                  <!-- C1: High-Liquidity Mean Reversion -->
+                  <ellipse cx="245" cy="145" rx="52" ry="20" fill="#DCFCE7" fill-opacity="0.65" stroke="#166534" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <text x="245" y="148" text-anchor="middle" font-size="8" font-family="JetBrains Mono" fill="#166534" font-weight="600">C1: Mean-Revert</text>
+
+                  <!-- C2: Dark Institutional Accumulation -->
+                  <ellipse cx="265" cy="105" rx="46" ry="22" fill="#DBEAFE" fill-opacity="0.65" stroke="#1E3A8A" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <text x="265" y="108" text-anchor="middle" font-size="8" font-family="JetBrains Mono" fill="#1E3A8A" font-weight="600">C2: Dark Flow</text>
+
+                  <!-- C3: News Volatility Spike -->
+                  <ellipse cx="140" cy="65" rx="55" ry="26" fill="#FEF3C7" fill-opacity="0.7" stroke="#B45309" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <text x="140" y="68" text-anchor="middle" font-size="8" font-family="JetBrains Mono" fill="#B45309" font-weight="600">C3: Vol Spike</text>
+
+                  <!-- C4: Toxic HFT Adverse Flow -->
+                  <ellipse cx="95" cy="130" rx="38" ry="18" fill="#FFE4E6" fill-opacity="0.65" stroke="#9F1239" stroke-width="1.5" stroke-dasharray="3 2" />
+                  <text x="95" y="133" text-anchor="middle" font-size="8" font-family="JetBrains Mono" fill="#9F1239" font-weight="600">C4: Toxic HFT</text>
+
+                  <!-- Current Buy Order Dot Position in GMM Space -->
+                  <circle cx="${ord.stage1.gmmPoint.x}" cy="${ord.stage1.gmmPoint.y}" r="11" fill="#166534" fill-opacity="0.25" />
+                  <circle cx="${ord.stage1.gmmPoint.x}" cy="${ord.stage1.gmmPoint.y}" r="6" fill="#166534" stroke="#FFFFFF" stroke-width="2" />
+                </svg>
+              </div>
+
+              <!-- Right: GMM Cluster Posterior Bars & Microstructure Features -->
+              <div class="sm:col-span-6 space-y-2.5 text-xs">
+                <div class="font-mono font-bold text-ink-900">${ord.stage1.activeClusterName}</div>
+                <div class="space-y-2">
+                  ${ord.stage1.clusters.map(c => `
+                    <div>
+                      <div class="flex justify-between font-mono text-[11px] mb-0.5">
+                        <span class="text-ink-700">${c.name}</span>
+                        <span class="font-bold text-ink-900">${c.prob}%</span>
+                      </div>
+                      <div class="w-full h-2 rounded-full bg-cream-200 overflow-hidden">
+                        <div class="h-full ${c.color}" style="width: ${c.prob}%"></div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="grid grid-cols-2 gap-1.5 pt-1 font-mono text-[11px]">
+                  <div class="p-1.5 rounded bg-cream-50 border border-cream-200">
+                    <span class="text-ink-500 block text-[9px]">OBI Imbalance</span>
+                    <span class="text-ink-900 font-semibold">${ord.stage1.lobFeatures.obi.split(' ')[0]}</span>
+                  </div>
+                  <div class="p-1.5 rounded bg-cream-50 border border-cream-200">
+                    <span class="text-ink-500 block text-[9px]">Kyle's Lambda (λ)</span>
+                    <span class="text-ink-900 font-semibold">${ord.stage1.lobFeatures.kyleLambda.split('(')[0]}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LangChain Real-Time Macro & News Signal Strip -->
+          <div class="p-3 rounded-xl stone-panel text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span class="text-[10px] uppercase tracking-wider text-emerald-800 font-bold block">LangChain Macro &amp; News Pipeline (${ord.stage1.langchainMacroSignal.latencyMs})</span>
+              <span class="text-ink-900">"${ord.stage1.langchainMacroSignal.headline}"</span>
+            </div>
+            <span class="px-2 py-1 rounded bg-white border border-cream-300 text-emerald-900 font-semibold shrink-0">
+              ${ord.stage1.langchainMacroSignal.sentimentScore.split(' ')[0]} Sentiment
+            </span>
+          </div>
+        </div>`;
+      }
+
+      // ==================== STAGE 2 CARD ====================
+      if (showStage(2)) {
+        html += `
+        <div class="${colSpanClass} editorial-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between border-b border-cream-200 pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-lg bg-blue-900 text-white font-mono text-xs font-bold flex items-center justify-center">02</span>
+                <div>
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-blue-900 font-semibold">Stage 2 &bull; 96% Tick-Level Accuracy</div>
+                  <h4 class="font-serif text-xl text-ink-900">30-Second Market Price &amp; L2 Liquidity Predictor</h4>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-emerald-50 text-emerald-900 border border-emerald-200">
+                ${ord.stage2.predictedDriftBps}
+              </span>
+            </div>
+
+            <!-- 30s Price Forecast Curve + L2 Order Book Depth -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 mt-4 items-center">
+              <!-- Left: 30s Micro-Price Cone SVG -->
+              <div class="sm:col-span-6 code-panel rounded-xl p-3">
+                <div class="flex justify-between text-[10px] font-mono text-ink-500 mb-1">
+                  <span>30-Sec Forecast Cone (95% CI)</span>
+                  <span class="text-ink-900 font-bold">Now: $${ord.stage2.currentMid.toFixed(2)} &rarr; +30s: $${ord.stage2.predicted30sMid.toFixed(2)}</span>
+                </div>
+                <svg viewBox="0 0 375 138" class="w-full h-auto bg-white rounded-lg border border-cream-200">
+                  <!-- 95% Confidence Cone Polygon -->
+                  <polygon points="${s2UpperPts} ${s2LowerPts}" fill="#DBEAFE" fill-opacity="0.7" />
+                  <!-- Predicted Mean Trajectory -->
+                  <path d="${s2MidLine}" fill="none" stroke="#1E3A8A" stroke-width="2.5" />
+                  ${s2Pts.map((pt, i) => `
+                    <circle cx="${s2X(i)}" cy="${s2Y(pt.price)}" r="3.5" fill="#1E3A8A" />
+                    <text x="${s2X(i)}" y="${s2Y(pt.price) - 7}" text-anchor="middle" font-size="8" font-family="JetBrains Mono" fill="#111111" font-weight="600">$${pt.price.toFixed(2)}</text>
+                    <text x="${s2X(i)}" y="131" text-anchor="middle" font-size="8" font-family="JetBrains Mono" fill="#6E6A63">${pt.sec.split(' ')[0]}</text>
+                  `).join('')}
+                </svg>
+              </div>
+
+              <!-- Right: L2 Order Book Bid vs Ask Liquidity Depth -->
+              <div class="sm:col-span-6 space-y-2 text-xs font-mono">
+                <div class="text-[11px] font-bold text-ink-900 flex justify-between">
+                  <span>Predicted L2 Book Depth (30s)</span>
+                  <span class="text-emerald-800">Bid Support</span>
+                </div>
+                <div class="space-y-1.5">
+                  ${ord.stage2.lobLevels.map(lvl => {
+                    const bidPct = Math.min(100, Math.round((lvl.bidQty / 28000) * 100));
+                    const askPct = Math.min(100, Math.round((lvl.askQty / 28000) * 100));
+                    return `
+                    <div class="p-1.5 rounded bg-cream-50 border border-cream-200 text-[10px]">
+                      <div class="flex justify-between text-ink-700 mb-0.5">
+                        <span class="text-emerald-800 font-semibold">Bid ${lvl.bidPrice} (${(lvl.bidQty/1000).toFixed(1)}k)</span>
+                        <span class="text-ink-400">${lvl.level}</span>
+                        <span class="text-rose-800 font-semibold">Ask ${lvl.askPrice} (${(lvl.askQty/1000).toFixed(1)}k)</span>
+                      </div>
+                      <div class="grid grid-cols-2 gap-1">
+                        <div class="w-full bg-cream-200 h-1.5 rounded-l overflow-hidden flex justify-end">
+                          <div class="bg-emerald-700 h-full" style="width:${bidPct}%"></div>
+                        </div>
+                        <div class="w-full bg-cream-200 h-1.5 rounded-r overflow-hidden">
+                          <div class="bg-rose-700 h-full" style="width:${askPct}%"></div>
+                        </div>
+                      </div>
+                    </div>`;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl stone-panel text-xs font-mono flex items-center justify-between">
+            <span class="text-ink-700">30s Liquidity Forecast: <strong class="text-ink-900">${ord.stage2.predictedLiquidity30s}</strong></span>
+            <span class="text-emerald-800 font-bold">95% CI: ${ord.stage2.confidenceInterval95}</span>
+          </div>
+        </div>`;
+      }
+
+      // ==================== STAGE 3 CARD ====================
+      if (showStage(3)) {
+        html += `
+        <div class="${colSpanClass} editorial-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between border-b border-cream-200 pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-lg bg-amber-800 text-white font-mono text-xs font-bold flex items-center justify-center">03</span>
+                <div>
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-amber-800 font-semibold">Stage 3 &bull; Almgren-Chriss + Hawkes Simulator</div>
+                  <h4 class="font-serif text-xl text-ink-900">Order Fill Probability &amp; How Order Affects the Market</h4>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-amber-50 text-amber-900 border border-amber-200">
+                P(Fill &le; 30s) = ${ord.stage3.tiers[ord.stage3.selectedTierIndex].fillProb}
+              </span>
+            </div>
+
+            <!-- Fill Probability & Market Impact Matrix Table -->
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs font-mono">
+                <thead>
+                  <tr class="border-b border-cream-200 bg-cream-50 text-[10px] uppercase text-ink-500">
+                    <th class="py-2 px-2.5">Execution Tier</th>
+                    <th class="py-2 px-2">P(Fill &le; 30s)</th>
+                    <th class="py-2 px-2">Temp + Perm Impact</th>
+                    <th class="py-2 px-2.5">Market Effect Assessment</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-cream-200">
+                  ${ord.stage3.tiers.map((t, tIdx) => {
+                    const isOpt = (tIdx === ord.stage3.selectedTierIndex);
+                    return `
+                    <tr class="${isOpt ? 'bg-emerald-50/90 font-semibold' : 'bg-white'}">
+                      <td class="py-2.5 px-2.5 text-ink-900">${isOpt ? '&#10003; ' : ''}${t.tier}</td>
+                      <td class="py-2.5 px-2 ${isOpt ? 'text-emerald-800 font-bold' : 'text-ink-700'}">${t.fillProb}</td>
+                      <td class="py-2.5 px-2 text-ink-900">${t.totalCost} <span class="text-[10px] text-ink-500">(${t.tempImpact}+${t.permImpact})</span></td>
+                      <td class="py-2.5 px-2.5">
+                        <span class="px-2 py-0.5 rounded text-[10px] ${
+                          isOpt
+                            ? 'bg-emerald-800 text-white'
+                            : 'bg-cream-100 text-ink-700 border border-cream-300'
+                        }">${t.status}</span>
+                      </td>
+                    </tr>`;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl stone-panel text-xs text-ink-700 leading-relaxed">
+            <strong class="font-mono text-ink-900">Market Deflection Analysis:</strong> ${ord.stage3.impactSummary}
+          </div>
+        </div>`;
+      }
+
+      // ==================== STAGE 4 CARD ====================
+      if (showStage(4)) {
+        html += `
+        <div class="${colSpanClass} editorial-card rounded-2xl p-5 flex flex-col justify-between space-y-4 border-2 border-emerald-800/40">
+          <div>
+            <div class="flex items-center justify-between border-b border-cream-200 pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-lg bg-emerald-800 text-white font-mono text-xs font-bold flex items-center justify-center">04</span>
+                <div>
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-800 font-semibold">Stage 4 &bull; The Main Brain (PPO Actor-Critic)</div>
+                  <h4 class="font-serif text-xl text-ink-900">Reinforcement Learning Optimization &amp; BPS Reward</h4>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-800 text-white">
+                ${ord.stage4.rewardScore.split(' ')[0]} BPS Q-Value
+              </span>
+            </div>
+
+            <!-- Explicit RL State & Reward Formula Box -->
+            <div class="mt-3 p-3 rounded-xl code-panel font-mono text-[11px] space-y-1">
+              <div class="text-ink-500">${ord.stage4.stateVectorSummary}</div>
+              <div class="text-ink-900 font-bold">
+                Reward R_t = Alpha_BPS_Saved - &lambda;1(Market_Impact_BPS) - &lambda;2(&sigma;&sup2;_Slippage) - &lambda;3(Inventory_Risk)
+              </div>
+            </div>
+
+            <!-- Candidate Policy Actions Evaluated by Critic -->
+            <div class="mt-3 space-y-2">
+              ${ord.stage4.candidateActions.map(act => `
+                <div class="p-2.5 rounded-xl border font-mono text-xs flex flex-wrap items-center justify-between gap-2 ${
+                  act.selected
+                    ? 'bg-emerald-50 border-emerald-700 text-ink-900 shadow-sm'
+                    : 'bg-white border-cream-200 text-ink-500'
+                }">
+                  <div>
+                    <div class="font-bold ${act.selected ? 'text-emerald-950' : 'text-ink-700'}">
+                      ${act.selected ? '&#9733; RL SELECTED: ' : ''}${act.action}
+                    </div>
+                    <div class="text-[10px] mt-0.5">
+                      Order Slice: <strong>${act.size}</strong> &bull; Impact Cost: ${act.impactBps} &bull; Timing Alpha: ${act.opportunityCost}
+                    </div>
+                  </div>
+                  <span class="px-2.5 py-1 rounded font-bold text-xs ${
+                    act.selected ? 'bg-emerald-800 text-white' : 'bg-cream-100 text-ink-700'
+                  }">
+                    Q = ${act.qValue}
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl stone-panel text-xs font-mono flex items-center justify-between">
+            <span class="text-ink-900 font-bold">Dispatched Decision: ${ord.stage4.chosenAction}</span>
+            <span class="text-emerald-800 font-bold"> Placed @ $${ord.execPrice.toFixed(2)}</span>
+          </div>
+        </div>`;
+      }
+
+      // ==================== STAGE 5 CARD ====================
+      if (showStage(5)) {
+        html += `
+        <div class="${colSpanClass} editorial-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between border-b border-cream-200 pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-lg bg-ink-900 text-white font-mono text-xs font-bold flex items-center justify-center">05</span>
+                <div>
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-ink-500 font-semibold">Stage 5 &bull; Multi-Market Execution Router</div>
+                  <h4 class="font-serif text-xl text-ink-900">Smart Venue Router (NASDAQ, NYSE, Dark Pools, IEX)</h4>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-stone-200 text-ink-900">
+                ${ord.sharesExecuted.toLocaleString()} Shares Routed
+              </span>
+            </div>
+
+            <!-- Venue Allocation Split Cards -->
+            <div class="mt-4 space-y-2.5">
+              ${ord.stage5.routes.map(rt => `
+                <div class="p-3 rounded-xl border ${rt.pct > 0 ? 'bg-white border-cream-300' : 'bg-cream-50/60 border-cream-200 opacity-60'}">
+                  <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                    <div>
+                      <span class="font-bold text-ink-900">${rt.venue}</span>
+                      <span class="text-ink-500 ml-2">&bull; ${rt.orderType}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[11px] text-emerald-800 font-semibold">${rt.feeRebate}</span>
+                      <span class="px-2 py-0.5 rounded bg-ink-900 text-white font-bold text-[11px]">${rt.pct}% (${rt.shares.toLocaleString()} sh)</span>
+                    </div>
+                  </div>
+                  <div class="w-full h-2 rounded-full bg-cream-200 mt-2 overflow-hidden">
+                    <div class="h-full bg-emerald-800 transition-all duration-500" style="width: ${rt.pct}%"></div>
+                  </div>
+                  <div class="flex justify-between text-[10px] font-mono text-ink-500 mt-1">
+                    <span>FIX Gateway Latency: ${rt.latency}</span>
+                    <span>Realized Venue Fill Rate: ${rt.fillRate}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl stone-panel text-xs font-mono text-ink-700 flex items-center justify-between">
+            <span>Anti-Gaming: <strong class="text-ink-900">Minimum Acceptable Quantity (MAQ) + IEX Speed-Bump</strong></span>
+            <span class="text-emerald-800 font-bold">Zero Info Leakage</span>
+          </div>
+        </div>`;
+      }
+
+      // ==================== STAGE 6 CARD ====================
+      if (showStage(6)) {
+        html += `
+        <div class="${colSpanClass} editorial-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between border-b border-cream-200 pb-3">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded-lg bg-ink-900 text-white font-mono text-xs font-bold flex items-center justify-center">06</span>
+                <div>
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-ink-500 font-semibold">Stage 6 &bull; Realized Telemetry &amp; LangGraph State</div>
+                  <h4 class="font-serif text-xl text-ink-900">Execution Audit &amp; Multi-Agent State JSON</h4>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                Saved ${ord.bpsSavedVsArrival}
+              </span>
+            </div>
+
+            <!-- Benchmark Comparison KPI Boxes -->
+            <div class="grid grid-cols-3 gap-2.5 mt-4 font-mono text-xs">
+              <div class="p-2.5 rounded-xl bg-cream-50 border border-cream-200">
+                <span class="text-[10px] text-ink-500 block">RL Execution Price</span>
+                <span class="text-base font-bold text-emerald-800">$${ord.execPrice.toFixed(2)}</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-cream-50 border border-cream-200">
+                <span class="text-[10px] text-ink-500 block">Market VWAP @ Fill</span>
+                <span class="text-base font-bold text-ink-900">$${ord.vwapAtExec.toFixed(2)}</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-cream-50 border border-cream-200">
+                <span class="text-[10px] text-ink-500 block">Cumulative Filled</span>
+                <span class="text-base font-bold text-ink-900">${(ord.cumulativeShares/1000).toFixed(0)}k / 150k</span>
+              </div>
+            </div>
+
+            <!-- LangGraph Multi-Agent State JSON -->
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-[10px] font-mono uppercase text-ink-500 mb-1">
+                <span>LangGraph StateGraph Payload (Synchronized Across 5 Agents)</span>
+                <span class="text-emerald-800 font-semibold">State Checkpointed</span>
+              </div>
+              <pre class="p-3 rounded-xl code-panel text-[11px] font-mono text-ink-900 overflow-x-auto max-h-44 leading-relaxed">${langGraphJson}</pre>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl stone-panel text-xs font-mono flex items-center justify-between">
+            <span>1.5M+ Simulated Trades Benchmark: <strong class="text-emerald-900">+22% vs VWAP &bull; +18% vs TWAP</strong></span>
+            <span class="text-ink-900 font-bold">-14.2 BPS Avg Slippage</span>
+          </div>
+        </div>`;
+      }
+
+      return html;
+    }
+
+    function renderSixStages() {
+      const ord = buyExecutionOrders[selectedDotIndex];
+      const inlineContainer = document.getElementById('inlinePipelineStagesContainer');
+      const modalContainer = document.getElementById('modalPipelineStagesContainer');
+
+      inlineContainer.innerHTML = buildSixStagesHtml(ord, false);
+      modalContainer.innerHTML = buildSixStagesHtml(ord, true);
+    }
+
+    // Modal Helpers for Interview Pitch Guide
+    function openPitchModal() {
+      document.getElementById('pitchGuideModal').classList.remove('hidden');
+    }
+
+    function closePitchModal() {
+      document.getElementById('pitchGuideModal').classList.add('hidden');
+    }
+
+    // Close modals on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closePipelineModal();
+        closePitchModal();
+      }
+    });
+
+    // Initialize Application on Load
+    window.onload = function () {
+      updateStageStepperButtons();
+      selectBuyDot(0, false);
+    };
+  </script>
+</body>
+</html>

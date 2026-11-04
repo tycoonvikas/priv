@@ -1,0 +1,2639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Federated Enterprise Data Intelligence & Multi-Agent NL2Query — Architecture Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            cream: {
+              50: '#FDFCFB',
+              100: '#FAF8F5',
+              200: '#F3EFEA',
+              300: '#E4E0D8',
+              400: '#D0C9BD',
+            },
+            ink: {
+              900: '#111111',
+              800: '#262523',
+              600: '#4A4843',
+              400: '#78756E',
+              300: '#9E9A91',
+            },
+            sage: {
+              bg: '#EBF3ED',
+              border: '#C6DEC9',
+              text: '#1E4620'
+            },
+            ochre: {
+              bg: '#FDF3E7',
+              border: '#F0D5B0',
+              text: '#7A4B0A'
+            },
+            burgundy: {
+              bg: '#FBECEB',
+              border: '#ECC6C4',
+              text: '#7F231C'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #FAF8F5;
+      color: #111111;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .editorial-card {
+      background-color: #FFFFFF;
+      border: 1px solid #E4E0D8;
+      box-shadow: 0 1px 2px rgba(17, 17, 17, 0.03);
+    }
+    .stone-panel {
+      background-color: #F3EFEA;
+      border: 1px solid #E4E0D8;
+    }
+    .code-surface {
+      background-color: #F7F5F0;
+      border: 1px solid #E4E0D8;
+      color: #111111;
+    }
+    .dot-grid-bg {
+      background-color: #FAF8F5;
+      background-image: radial-gradient(#D0C9BD 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+    .code-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .code-scroll::-webkit-scrollbar-track {
+      background: #F3EFEA;
+    }
+    .code-scroll::-webkit-scrollbar-thumb {
+      background: #D0C9BD;
+      border-radius: 3px;
+    }
+    .code-scroll::-webkit-scrollbar-thumb:hover {
+      background: #9E9A91;
+    }
+    @keyframes dashFlow {
+      to {
+        stroke-dashoffset: -20;
+      }
+    }
+    .animated-edge {
+      stroke-dasharray: 5 5;
+      animation: dashFlow 1s linear infinite;
+    }
+    .pdf-span {
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border-bottom-width: 2px;
+    }
+    .pdf-span:hover {
+      background-color: #111111 !important;
+      color: #FFFFFF !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-ink-900 selection:text-cream-100">
+
+  <!-- =====================================================================
+       EDITORIAL HEADER & PIPELINE NAVIGATION BAR
+       ===================================================================== -->
+  <header class="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-md border-b border-cream-300">
+    <div class="max-w-[1400px] mx-auto px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand / Title -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 rounded-lg bg-ink-900 text-cream-100 flex items-center justify-center font-mono font-semibold text-xs tracking-wider">
+          VG
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-ink-900">
+              Federated Enterprise Data Intelligence &amp; Multi-Agent NL2Query
+            </h1>
+            <span class="px-2 py-0.5 text-[11px] font-mono font-medium bg-cream-200 text-ink-800 border border-cream-300 rounded">
+              Insurance Underwriting Domain
+            </span>
+          </div>
+          <p class="text-xs text-ink-400">
+            Architecture Walkthrough &bull; Structured &amp; Unstructured Ontology Reconciliation &rarr; Neo4j Virtual Graph &rarr; Cypher-to-SQL
+          </p>
+        </div>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-2">
+        <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-cream-300 text-xs text-ink-600">
+          <span class="w-2 h-2 rounded-full bg-ink-900"></span>
+          <span>Presenter: <strong class="text-ink-900 font-semibold">Vikas Rajput</strong> (Nexus Technologies R&amp;D)</span>
+        </div>
+
+        <button id="btnViewMode" onclick="toggleViewMode()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-cream-200 text-ink-900 border border-cream-300 transition">
+          View: Step-by-Step
+        </button>
+
+        <button onclick="openCheatSheetModal()" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-ink-900 hover:bg-ink-800 text-cream-100 transition flex items-center gap-1.5">
+          <span>Interview Guide</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 5-STAGE HORIZONTAL STEPPER -->
+    <div class="border-t border-cream-300 bg-cream-200/60">
+      <div class="max-w-[1400px] mx-auto px-4 sm:px-8 py-2">
+        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2">
+          <button onclick="goToStep(1)" id="stepTab-1" class="text-left p-2.5 rounded-lg border transition-all flex items-center gap-2.5">
+            <span id="stepBadge-1" class="w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold shrink-0">01</span>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold truncate">Structured &amp; YAMLs</div>
+              <div class="text-[10px] text-ink-400 truncate">Snowflake / SQL / S3 &rarr; 3 YAMLs</div>
+            </div>
+          </button>
+
+          <button onclick="goToStep(2)" id="stepTab-2" class="text-left p-2.5 rounded-lg border transition-all flex items-center gap-2.5">
+            <span id="stepBadge-2" class="w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold shrink-0">02</span>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold truncate">Unstructured PDF NLP</div>
+              <div class="text-[10px] text-ink-400 truncate">OCR + spaCy EntityRuler &rarr; YAML</div>
+            </div>
+          </button>
+
+          <button onclick="goToStep(3)" id="stepTab-3" class="text-left p-2.5 rounded-lg border transition-all flex items-center gap-2.5">
+            <span id="stepBadge-3" class="w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold shrink-0">03</span>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold truncate">3-Tier Reconciliation</div>
+              <div class="text-[10px] text-ink-400 truncate">Fuzzy &gt;95% &bull; Semantic &bull; LLM</div>
+            </div>
+          </button>
+
+          <button onclick="goToStep(4)" id="stepTab-4" class="text-left p-2.5 rounded-lg border transition-all flex items-center gap-2.5">
+            <span id="stepBadge-4" class="w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold shrink-0">04</span>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold truncate">Neo4j Virtual Graph</div>
+              <div class="text-[10px] text-ink-400 truncate">Interactive Nodes &amp; Lineage</div>
+            </div>
+          </button>
+
+          <button onclick="goToStep(5)" id="stepTab-5" class="text-left p-2.5 rounded-lg border transition-all flex items-center gap-2.5">
+            <span id="stepBadge-5" class="w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold shrink-0">05</span>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold truncate">NL &rarr; Cypher &rarr; SQL</div>
+              <div class="text-[10px] text-ink-400 truncate">Graph Context + SQL Execution</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       MAIN CONTENT CONTAINER
+       ===================================================================== -->
+  <main class="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-8 py-8 space-y-10">
+
+    <!-- ===================================================================
+         STAGE 1: STRUCTURED DATA SOURCES & ONTOLOGY YAML GENERATION
+         =================================================================== -->
+    <section id="stepSection-1" class="space-y-6">
+      <!-- Editorial Section Header -->
+      <div class="editorial-card rounded-xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-ink-400">
+            <span>Stage 01 / 05</span>
+            <span>&mdash;</span>
+            <span>Federated Structured Metadata Ingestion</span>
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl text-ink-900 tracking-tight">
+            Structured Data Sources &rarr; Ontology, Semantic &amp; Mapping YAML Generation
+          </h2>
+          <p class="text-sm text-ink-600 leading-relaxed">
+            Schema catalogs across <strong class="text-ink-900 font-semibold">Snowflake (`UW_PROD_DW.PUBLIC`)</strong>, <strong class="text-ink-900 font-semibold">PostgreSQL (`POLICY_CORE_DB`)</strong>, and <strong class="text-ink-900 font-semibold">AWS S3 Parquet (`s3://nexus-uw-actuarial-lake/`)</strong> are introspected automatically. Notice how single canonical concepts like <code class="font-mono text-xs bg-cream-200 px-1.5 py-0.5 rounded border border-cream-300">CommercialProperty</code> and <code class="font-mono text-xs bg-cream-200 px-1.5 py-0.5 rounded border border-cream-300">PolicyContract</code> are <span class="underline decoration-ink-900 font-medium text-ink-900">driven simultaneously from 2 distinct databases</span> and compiled into three declarative YAML artifacts.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="stone-panel rounded-lg px-4 py-2.5 text-center">
+            <div class="text-lg font-bold font-mono text-ink-900">3</div>
+            <div class="text-[11px] text-ink-400">Data Stores</div>
+          </div>
+          <div class="stone-panel rounded-lg px-4 py-2.5 text-center">
+            <div class="text-lg font-bold font-mono text-ink-900">5</div>
+            <div class="text-[11px] text-ink-400">Core Entities</div>
+          </div>
+          <div class="stone-panel rounded-lg px-4 py-2.5 text-center">
+            <div class="text-lg font-bold font-mono text-ink-900">3</div>
+            <div class="text-[11px] text-ink-400">Dual-DB Entities</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-Column Architecture Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 4 Cols: 3 Physical Databases -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="flex items-center justify-between border-b border-cream-300 pb-2">
+            <h3 class="text-xs font-mono uppercase tracking-wider text-ink-600 font-semibold">1. Physical Structured Stores</h3>
+            <span class="text-[11px] font-mono text-ink-400">Click entity to trace lineage</span>
+          </div>
+
+          <!-- DB 1: Snowflake -->
+          <div id="dbCard-snowflake" class="editorial-card rounded-xl p-4 transition-all">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded bg-ink-900 text-cream-100 flex items-center justify-center font-mono font-semibold text-xs">SF</span>
+                <div>
+                  <h4 class="text-sm font-semibold text-ink-900">Snowflake Cloud DW</h4>
+                  <p class="text-[11px] font-mono text-ink-400">UW_PROD_DW.PUBLIC</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-cream-200 text-ink-600 rounded border border-cream-300">OLAP Warehouse</span>
+            </div>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="p-2.5 rounded-lg bg-cream-100 border border-cream-300">
+                <div class="font-semibold text-ink-900 flex justify-between">
+                  <span>DIM_PROPERTY_ASSET</span>
+                  <span class="text-[10px] text-ink-400">PK: PROP_ASSET_ID</span>
+                </div>
+                <div class="text-[11px] text-ink-600 mt-1">
+                  PROP_ASSET_ID, GEO_LAT, GEO_LON, TIV_USD, FEMA_FLOOD_ZONE, PROTECTION_CLASS_CD, ROOF_MATERIAL_CD
+                </div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-cream-100 border border-cream-300">
+                <div class="font-semibold text-ink-900 flex justify-between">
+                  <span>FACT_UW_RISK_SCORES</span>
+                  <span class="text-[10px] text-ink-400">PK: RISK_SCORE_ID</span>
+                </div>
+                <div class="text-[11px] text-ink-600 mt-1">
+                  RISK_SCORE_ID, PROP_ASSET_ID (FK), CAT_PERIL_SCORE, FIRE_HAZARD_SCORE, COMPOSITE_UW_SCORE
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DB 2: PostgreSQL -->
+          <div id="dbCard-postgres" class="editorial-card rounded-xl p-4 transition-all">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded bg-ink-900 text-cream-100 flex items-center justify-center font-mono font-semibold text-xs">PG</span>
+                <div>
+                  <h4 class="text-sm font-semibold text-ink-900">PostgreSQL Relational DB</h4>
+                  <p class="text-[11px] font-mono text-ink-400">POLICY_CORE_DB (via DBeaver)</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-cream-200 text-ink-600 rounded border border-cream-300">OLTP System</span>
+            </div>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="p-2.5 rounded-lg bg-cream-100 border border-cream-300">
+                <div class="font-semibold text-ink-900 flex justify-between">
+                  <span>TBL_BLDG_INSPECTION</span>
+                  <span class="text-[10px] text-ink-400">FK: BLDG_PROP_ID</span>
+                </div>
+                <div class="text-[11px] text-ink-600 mt-1">
+                  INSP_ID, BLDG_PROP_ID, YEAR_BUILT, TOTAL_SQ_FT, OCCUPANCY_CLASS, WIRING_GRADE
+                </div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-cream-100 border border-cream-300">
+                <div class="font-semibold text-ink-900 flex justify-between">
+                  <span>MSTR_POLICY_HEADER</span>
+                  <span class="text-[10px] text-ink-400">PK: POLICY_NUM</span>
+                </div>
+                <div class="text-[11px] text-ink-600 mt-1">
+                  POLICY_NUM, ORG_ID (FK), PROP_ASSET_ID (FK), EFF_DATE, EXP_DATE, WRITTEN_PREMIUM_USD, POLICY_STATUS
+                </div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-cream-100 border border-cream-300">
+                <div class="font-semibold text-ink-900 flex justify-between">
+                  <span>TBL_CLAIM_LEDGER &amp; TBL_INSURED_ORG</span>
+                  <span class="text-[10px] text-ink-400">PK: CLAIM_ID / ORG_ID</span>
+                </div>
+                <div class="text-[11px] text-ink-600 mt-1">
+                  CLAIM_ID, POLICY_NUM, INCURRED_LOSS_USD, LOSS_CAUSE | ORG_ID, LEGAL_ENTITY_NAME, DUNS_NO, NAICS_CD
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DB 3: AWS S3 -->
+          <div id="dbCard-s3" class="editorial-card rounded-xl p-4 transition-all">
+            <div class="flex items-center justify-between mb-2.5">
+              <div class="flex items-center gap-2.5">
+                <span class="w-7 h-7 rounded bg-ink-900 text-cream-100 flex items-center justify-center font-mono font-semibold text-xs">S3</span>
+                <div>
+                  <h4 class="text-sm font-semibold text-ink-900">AWS S3 Parquet Lake</h4>
+                  <p class="text-[11px] font-mono text-ink-400">s3://nexus-uw-actuarial-lake/</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-mono bg-cream-200 text-ink-600 rounded border border-cream-300">Parquet Lake</span>
+            </div>
+            <div class="space-y-2 text-xs font-mono">
+              <div class="p-2.5 rounded-lg bg-cream-100 border border-cream-300">
+                <div class="font-semibold text-ink-900">uw_endorsement_schedules.parquet</div>
+                <div class="text-[11px] text-ink-600 mt-1">
+                  POLICY_NUMBER, DEDUCTIBLE_PCT, WIND_HAIL_SUBLIMIT_USD, COINSURANCE_PCT
+                </div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-cream-100 border border-cream-300">
+                <div class="font-semibold text-ink-900">cat_flood_zone_exposures.parquet</div>
+                <div class="text-[11px] text-ink-600 mt-1">
+                  PROPERTY_ID, STORM_SURGE_MULTIPLIER, PROBABLE_MAX_LOSS_PML
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle 4 Cols: 5 Canonical Domain Entities -->
+        <div class="lg:col-span-4 space-y-3">
+          <div class="flex items-center justify-between border-b border-cream-300 pb-2">
+            <h3 class="text-xs font-mono uppercase tracking-wider text-ink-600 font-semibold">2. Canonical Entities (Select to Inspect)</h3>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sage-bg text-sage-text border border-sage-border font-medium">Dual-DB Lineage</span>
+          </div>
+
+          <div id="structuredEntityList" class="space-y-3">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Right 4 Cols: 3 Generated YAML Specifications -->
+        <div class="lg:col-span-4 editorial-card rounded-xl flex flex-col overflow-hidden">
+          <div class="p-3 bg-cream-200/70 border-b border-cream-300 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1">
+              <button onclick="switchStep1Yaml('ontology')" id="yamlTab-ontology" class="px-2.5 py-1.5 rounded text-xs font-mono font-medium transition">
+                1. Structure YAML
+              </button>
+              <button onclick="switchStep1Yaml('semantic')" id="yamlTab-semantic" class="px-2.5 py-1.5 rounded text-xs font-mono font-medium transition">
+                2. Semantic YAML
+              </button>
+              <button onclick="switchStep1Yaml('mapping')" id="yamlTab-mapping" class="px-2.5 py-1.5 rounded text-xs font-mono font-medium transition">
+                3. Mapping YAML
+              </button>
+            </div>
+            <button onclick="copyTextById('step1YamlCode', this)" class="px-2.5 py-1 rounded text-[11px] font-mono bg-white hover:bg-cream-100 text-ink-800 border border-cream-300 transition">
+              Copy
+            </button>
+          </div>
+
+          <div class="px-4 py-2 bg-cream-100 border-b border-cream-300 text-xs flex items-center justify-between font-mono">
+            <span id="yamlFilenameLabel" class="font-semibold text-ink-900">structure_ontology.yaml</span>
+            <span id="yamlSelectedEntityBadge" class="text-[11px] text-ink-600">Entity: CommercialProperty</span>
+          </div>
+
+          <pre id="step1YamlCode" class="p-4 text-xs font-mono leading-relaxed text-ink-900 overflow-auto code-scroll flex-1 max-h-[560px] bg-[#F7F5F0]"></pre>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         STAGE 2: UNSTRUCTURED PDF NLP & ENTITY-RULER PIPELINE
+         =================================================================== -->
+    <section id="stepSection-2" class="hidden space-y-6">
+      <!-- Editorial Section Header -->
+      <div class="editorial-card rounded-xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-ink-400">
+            <span>Stage 02 / 05</span>
+            <span>&mdash;</span>
+            <span>Unstructured Document Intelligence Pipeline</span>
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl text-ink-900 tracking-tight">
+            Unstructured PDF Parsing (PyMuPDF + OCR) &rarr; spaCy EntityRuler &rarr; Concept &amp; Relationship YAML
+          </h2>
+          <p class="text-sm text-ink-600 leading-relaxed">
+            Critical underwriting risk factors reside inside engineering fire inspection reports, appraisal slips, and loss-run affidavits. We extract layout-aware text using <strong class="text-ink-900 font-semibold">PyMuPDF (`fitz`) + Tesseract OCR</strong>, apply <strong class="text-ink-900 font-semibold">spaCy (`en_core_web_trf`) paired with deterministic `EntityRuler` token patterns</strong>, and traverse dependency parse trees to extract Subject&ndash;Predicate&ndash;Object triples into an Unstructured YAML specification.
+          </p>
+        </div>
+        <div class="shrink-0">
+          <button onclick="cyclePdfDocument()" class="px-4 py-2.5 rounded-lg text-xs font-semibold bg-ink-900 hover:bg-ink-800 text-cream-100 transition flex items-center gap-2">
+            <span>Cycle Sample PDF Document &rarr;</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4-Step Pipeline Sub-cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="editorial-card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-mono font-semibold text-ink-400">STEP 2.1</span>
+            <span class="px-2 py-0.5 text-[10px] font-mono bg-cream-200 text-ink-800 rounded border border-cream-300">PyMuPDF + OCR</span>
+          </div>
+          <div class="text-xs font-bold text-ink-900 mb-1">PDF Layout &amp; Text Extraction</div>
+          <p class="text-xs text-ink-600">Extracts text blocks, bounding boxes, and scanned tables via `fitz`, `pdfplumber`, and `pytesseract`.</p>
+        </div>
+
+        <div class="editorial-card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-mono font-semibold text-ink-400">STEP 2.2</span>
+            <span class="px-2 py-0.5 text-[10px] font-mono bg-cream-200 text-ink-800 rounded border border-cream-300">spaCy EntityRuler</span>
+          </div>
+          <div class="text-xs font-bold text-ink-900 mb-1">Rule + Transformer NER</div>
+          <p class="text-xs text-ink-600">Matches custom token patterns (e.g. `[{'LOWER': 'sprinkler'}, {'LOWER': 'system'}]`) alongside transformer NER.</p>
+        </div>
+
+        <div class="editorial-card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-mono font-semibold text-ink-400">STEP 2.3</span>
+            <span class="px-2 py-0.5 text-[10px] font-mono bg-cream-200 text-ink-800 rounded border border-cream-300">Dependency Parse</span>
+          </div>
+          <div class="text-xs font-bold text-ink-900 mb-1">Concept &amp; Relation Digging</div>
+          <p class="text-xs text-ink-600">Traverses syntactic dependency trees (`nsubj`, `ROOT`, `prep`, `pobj`) to link entities into S-P-O triples.</p>
+        </div>
+
+        <div class="editorial-card rounded-xl p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-mono font-semibold text-ink-400">STEP 2.4</span>
+            <span class="px-2 py-0.5 text-[10px] font-mono bg-sage-bg text-sage-text rounded border border-sage-border">YAML Artifact</span>
+          </div>
+          <div class="text-xs font-bold text-ink-900 mb-1">Unstructured Concept YAML</div>
+          <p class="text-xs text-ink-600">Serializes extracted concepts, attributes, confidence scores, and relationship triples for Stage 3 reconciliation.</p>
+        </div>
+      </div>
+
+      <!-- Main Stage 2 Workspace -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 6 Cols: Interactive PDF Document & OCR Viewer -->
+        <div class="lg:col-span-6 editorial-card rounded-xl flex flex-col overflow-hidden">
+          <div class="p-3 bg-cream-200/70 border-b border-cream-300 flex flex-wrap items-center gap-1.5">
+            <button onclick="selectPdfDoc(0)" id="pdfTab-0" class="px-2.5 py-1.5 rounded text-xs font-mono font-medium transition">
+              Engineering_Fire_Inspection_Report_2026.pdf
+            </button>
+            <button onclick="selectPdfDoc(1)" id="pdfTab-1" class="px-2.5 py-1.5 rounded text-xs font-mono font-medium transition">
+              Commercial_Property_Appraisal_Slip.pdf
+            </button>
+            <button onclick="selectPdfDoc(2)" id="pdfTab-2" class="px-2.5 py-1.5 rounded text-xs font-mono font-medium transition">
+              Historical_Loss_Run_Affidavit.pdf
+            </button>
+          </div>
+
+          <!-- Entity Tag Legend -->
+          <div class="px-4 py-2 bg-cream-100 border-b border-cream-300 flex flex-wrap items-center gap-2 text-[11px] font-mono">
+            <span class="text-ink-400">EntityRuler Spans (Click any span):</span>
+            <span class="px-2 py-0.5 rounded bg-cream-200 text-ink-900 border border-ink-900/30">PROPERTY_REF</span>
+            <span class="px-2 py-0.5 rounded bg-sage-bg text-sage-text border border-sage-border">FIRE_PROTECTION</span>
+            <span class="px-2 py-0.5 rounded bg-ochre-bg text-ochre-text border border-ochre-border">STRUCTURAL_HAZARD</span>
+            <span class="px-2 py-0.5 rounded bg-burgundy-bg text-burgundy-text border border-burgundy-border">LOSS_EVENT</span>
+          </div>
+
+          <!-- Simulated Extracted Document Paper -->
+          <div class="p-5 flex-1 bg-cream-100/60 space-y-4">
+            <div id="pdfViewerContent" class="p-5 rounded-lg bg-white border border-cream-300 font-mono text-xs leading-7 text-ink-800 space-y-3 shadow-sm">
+              <!-- Populated by JS -->
+            </div>
+
+            <!-- Active Span Inspector Bar -->
+            <div class="p-3.5 rounded-lg bg-cream-200 border border-cream-300 flex items-center justify-between gap-4">
+              <div>
+                <div class="text-[10px] font-mono uppercase tracking-wider text-ink-400">Clicked Span &amp; EntityRuler Pattern Match</div>
+                <div id="spanInspectorDetail" class="text-xs font-mono text-ink-900 mt-1">
+                  Span: <strong>"NFPA-13 ESFR Wet-Pipe Sprinkler System (Grade A)"</strong> &bull; Label: <strong>FIRE_PROTECTION</strong> &bull; Rule: <code>[{'LOWER': 'sprinkler'}, {'LOWER': 'system'}]</code>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded text-xs font-mono bg-sage-bg text-sage-text border border-sage-border shrink-0 font-semibold">Conf: 0.99</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 6 Cols: Tabbed View (Triples, spaCy EntityRuler Code, Unstructured YAML) -->
+        <div class="lg:col-span-6 editorial-card rounded-xl flex flex-col overflow-hidden">
+          <div class="p-3 bg-cream-200/70 border-b border-cream-300 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <button onclick="switchStep2RightTab('triples')" id="step2Tab-triples" class="px-3 py-1.5 rounded text-xs font-mono font-medium transition">
+                1. Extracted Triples &amp; Rules
+              </button>
+              <button onclick="switchStep2RightTab('spacy')" id="step2Tab-spacy" class="px-3 py-1.5 rounded text-xs font-mono font-medium transition">
+                2. spaCy EntityRuler Code
+              </button>
+              <button onclick="switchStep2RightTab('yaml')" id="step2Tab-yaml" class="px-3 py-1.5 rounded text-xs font-mono font-medium transition">
+                3. Unstructured YAML
+              </button>
+            </div>
+          </div>
+
+          <div id="step2RightContainer" class="p-4 flex-1 overflow-auto code-scroll bg-[#F7F5F0] max-h-[520px]">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         STAGE 3: 3-TIER RECONCILIATION ENGINE (STRUCTURED + UNSTRUCTURED YAML)
+         =================================================================== -->
+    <section id="stepSection-3" class="hidden space-y-6">
+      <!-- Editorial Section Header -->
+      <div class="editorial-card rounded-xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-ink-400">
+            <span>Stage 03 / 05</span>
+            <span>&mdash;</span>
+            <span>Hybrid Ontology Alignment &amp; Adjudication</span>
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl text-ink-900 tracking-tight">
+            3-Tier Reconciliation Cascade: Fuzzy (&gt;95%) &rarr; Semantic Embeddings &rarr; LLM Adjudication
+          </h2>
+          <p class="text-sm text-ink-600 leading-relaxed">
+            Candidate entity and attribute pairs between the <strong class="text-ink-900 font-semibold">Structured YAML</strong> and <strong class="text-ink-900 font-semibold">Unstructured PDF YAML</strong> pass through three sequential reconciliation gates: <strong class="text-ink-900">Gate 1: Lexical Fuzzy Matching (&gt;95% auto-merge)</strong>, <strong class="text-ink-900">Gate 2: Dense Semantic Embeddings (`text-embedding-3-large` &rarr; Merge, Relate, or Reject)</strong>, and <strong class="text-ink-900">Gate 3: LLM Adjudication Call</strong> for nuanced underwriting candidate pairs.
+          </p>
+        </div>
+        <div class="shrink-0">
+          <button onclick="stepThroughReconciliation()" class="px-4 py-2.5 rounded-lg text-xs font-semibold bg-ink-900 hover:bg-ink-800 text-cream-100 transition">
+            Inspect Next Candidate Pair &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 Sequential Gate Filter Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <button onclick="selectReconTier(1)" id="reconTierCard-1" class="text-left editorial-card rounded-xl p-4 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-sage-bg text-sage-text border border-sage-border">GATE 3.1 &bull; FUZZY MATCH</span>
+            <span class="text-xs font-mono text-ink-600 font-semibold">Score &gt; 95.0%</span>
+          </div>
+          <h3 class="text-sm font-bold text-ink-900">Levenshtein / Jaro-Winkler (&gt;95% Merge)</h3>
+          <p class="text-xs text-ink-600 mt-1">
+            High-confidence lexical matches (e.g., <code class="font-mono">Commercial_Property</code> vs <code class="font-mono">CommercialProperty</code> = 97.4%) bypass LLM latency and auto-merge.
+          </p>
+          <div class="mt-3 pt-2 border-t border-cream-300 flex items-center justify-between text-xs font-mono text-ink-800">
+            <span>4 Candidate Pairs</span>
+            <span class="font-semibold">4 Auto-Merged &rarr;</span>
+          </div>
+        </button>
+
+        <button onclick="selectReconTier(2)" id="reconTierCard-2" class="text-left editorial-card rounded-xl p-4 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-ochre-bg text-ochre-text border border-ochre-border">GATE 3.2 &bull; SEMANTIC</span>
+            <span class="text-xs font-mono text-ink-600 font-semibold">text-embedding-3-large</span>
+          </div>
+          <h3 class="text-sm font-bold text-ink-900">Cosine Similarity (Merge / Relate / Reject)</h3>
+          <p class="text-xs text-ink-600 mt-1">
+            Embeds concept definitions &amp; synonyms: <span class="font-semibold text-sage-text">&ge;0.88 MERGE</span>, <span class="font-semibold text-ochre-text">0.72&ndash;0.87 RELATE</span>, <span class="font-semibold text-burgundy-text">&lt;0.72 REJECT</span>.
+          </p>
+          <div class="mt-3 pt-2 border-t border-cream-300 flex items-center justify-between text-xs font-mono text-ink-800">
+            <span>5 Candidate Pairs</span>
+            <span class="font-semibold">1 Merge, 3 Relate, 1 Reject &rarr;</span>
+          </div>
+        </button>
+
+        <button onclick="selectReconTier(3)" id="reconTierCard-3" class="text-left editorial-card rounded-xl p-4 transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-ink-900 text-cream-100">GATE 3.3 &bull; LLM CALL</span>
+            <span class="text-xs font-mono text-ink-600 font-semibold">Ambiguous Pairs</span>
+          </div>
+          <h3 class="text-sm font-bold text-ink-900">LLM Concept Pair Adjudication</h3>
+          <p class="text-xs text-ink-600 mt-1">
+            Resolves domain-specific pairs (e.g., <code class="font-mono">Fire_Suppression_Grade</code> from PDF vs <code class="font-mono">PROTECTION_CLASS_CD</code> in Snowflake).
+          </p>
+          <div class="mt-3 pt-2 border-t border-cream-300 flex items-center justify-between text-xs font-mono text-ink-800">
+            <span>3 Candidate Pairs</span>
+            <span class="font-semibold">Inspect Prompt &amp; JSON &rarr;</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Reconciliation Matrix Table + Inspector -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Left 7 Cols: Candidate Pair Table -->
+        <div class="lg:col-span-7 editorial-card rounded-xl overflow-hidden flex flex-col">
+          <div class="p-4 bg-cream-200/70 border-b border-cream-300 flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="text-sm font-bold text-ink-900">Candidate Concept Pairs &mdash; Reconciliation Matrix</h3>
+              <p class="text-xs text-ink-600">Click any row to inspect the scoring calculation or LLM adjudication payload</p>
+            </div>
+            <button onclick="selectReconTier(0)" class="px-2.5 py-1 rounded text-xs font-mono bg-white hover:bg-cream-100 text-ink-900 border border-cream-300">
+              Show All (12)
+            </button>
+          </div>
+
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-cream-300 bg-cream-100 text-[11px] font-mono uppercase text-ink-400">
+                  <th class="py-3 px-3.5">Structured YAML Entity / Col</th>
+                  <th class="py-3 px-3.5">Unstructured PDF Concept</th>
+                  <th class="py-3 px-3">Gate &amp; Score</th>
+                  <th class="py-3 px-3.5">Verdict &amp; Action</th>
+                </tr>
+              </thead>
+              <tbody id="reconTableBody" class="divide-y divide-cream-300 font-mono">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Deep-Dive Inspector -->
+        <div class="lg:col-span-5 editorial-card rounded-xl overflow-hidden flex flex-col">
+          <div class="p-4 bg-cream-200/70 border-b border-cream-300 flex items-center justify-between">
+            <div>
+              <div class="text-[10px] font-mono uppercase tracking-wider text-ink-400">Reconciliation Gate Inspector</div>
+              <h3 id="reconInspectorTitle" class="text-sm font-bold text-ink-900">LLM Candidate Pair Adjudication</h3>
+            </div>
+            <span id="reconInspectorBadge" class="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-sage-bg text-sage-text border border-sage-border">MERGE</span>
+          </div>
+          <div id="reconInspectorBody" class="p-4 space-y-4 overflow-auto code-scroll flex-1 max-h-[500px] bg-cream-50 text-xs">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         STAGE 4: NEO4J VIRTUAL KNOWLEDGE GRAPH (VG GRAPH)
+         =================================================================== -->
+    <section id="stepSection-4" class="hidden space-y-6">
+      <!-- Editorial Section Header -->
+      <div class="editorial-card rounded-xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-ink-400">
+            <span>Stage 04 / 05</span>
+            <span>&mdash;</span>
+            <span>Reconciled Neo4j Virtual Knowledge Graph (VG Graph)</span>
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl text-ink-900 tracking-tight">
+            Interactive Neo4j Ontology Graph &amp; Multi-Source Property Inspector
+          </h2>
+          <p class="text-sm text-ink-600 leading-relaxed">
+            Once the Structured and Unstructured YAMLs are reconciled, we materialize the <strong class="text-ink-900 font-semibold">Neo4j Virtual Graph (VG)</strong>. <span class="underline decoration-ink-900 font-medium text-ink-900">Click any node in the graph canvas below</span> to inspect its complete property dictionary: physical database &amp; PDF lineage, mapped source columns, sample values, business description, synonyms, and standard `ACORD` / `FIBO` ontology class.
+          </p>
+        </div>
+        <div class="shrink-0">
+          <span class="px-3.5 py-2 rounded-lg bg-cream-200 border border-cream-300 text-xs font-mono text-ink-800">
+            7 Reconciled Concept Nodes &bull; 8 Directed Edges
+          </span>
+        </div>
+      </div>
+
+      <!-- Graph Canvas + Right Property Drawer -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left 7 Cols: Interactive SVG Graph on Cream Dot-Grid -->
+        <div class="lg:col-span-7 editorial-card rounded-xl flex flex-col overflow-hidden">
+          <div class="p-3.5 bg-cream-200/70 border-b border-cream-300 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-ink-900"></span>
+              <span class="text-xs font-mono font-semibold text-ink-900">neo4j://uw-enterprise-vg-graph:7687</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono text-ink-600">
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-ink-900 inline-block"></span>Dual-DB Federated</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-white border-2 border-ink-900 inline-block"></span>SQL + PDF Hybrid</span>
+              <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-ochre-bg border-2 border-ochre-text inline-block"></span>Unstructured PDF Node</span>
+            </div>
+          </div>
+
+          <!-- Node Quick-Select Bar -->
+          <div class="px-4 py-2 bg-cream-100 border-b border-cream-300 flex items-center gap-1.5 overflow-x-auto">
+            <span class="text-[10px] font-mono text-ink-400 shrink-0 mr-1">Select Node:</span>
+            <div id="nodeQuickPills" class="flex items-center gap-1.5">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- SVG Graph Canvas -->
+          <div class="relative flex-1 dot-grid-bg flex items-center justify-center min-h-[480px] p-2">
+            <svg id="neo4jGraphSvg" viewBox="0 0 820 500" class="w-full h-full max-h-[520px] select-none">
+              <defs>
+                <marker id="arrow-muted" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#9E9A91" />
+                </marker>
+                <marker id="arrow-ink" viewBox="0 0 10 10" refX="26" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#111111" />
+                </marker>
+              </defs>
+              <g id="svgEdgesGroup"></g>
+              <g id="svgNodesGroup"></g>
+            </svg>
+
+            <div class="absolute bottom-3 left-3 px-3 py-1.5 rounded-md bg-white/95 border border-cream-300 text-[11px] font-mono text-ink-600 shadow-sm">
+              Click any node to inspect its source columns, sample values, description &amp; synonyms
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Node Property Inspector Drawer -->
+        <div class="lg:col-span-5 editorial-card rounded-xl flex flex-col overflow-hidden">
+          <div class="p-4 bg-cream-200/70 border-b border-cream-300 flex items-center justify-between">
+            <div>
+              <div class="text-[10px] font-mono uppercase tracking-wider text-ink-400">Neo4j VG Node Property Drawer</div>
+              <h3 id="inspectorNodeTitle" class="text-base font-bold text-ink-900 font-mono mt-0.5">:CommercialProperty</h3>
+            </div>
+            <span id="inspectorOntologyBadge" class="px-2.5 py-1 rounded text-xs font-mono bg-white text-ink-900 border border-cream-300 font-medium">
+              ACORD:CommercialProperty
+            </span>
+          </div>
+
+          <div id="nodeInspectorContent" class="p-4 space-y-4 overflow-auto code-scroll flex-1 max-h-[540px] bg-white text-xs">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ===================================================================
+         STAGE 5: MULTI-AGENT NL2QUERY EXECUTION (NL -> CYPHER -> SQL -> RESULTS)
+         =================================================================== -->
+    <section id="stepSection-5" class="hidden space-y-6">
+      <!-- Editorial Section Header -->
+      <div class="editorial-card rounded-xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-ink-400">
+            <span>Stage 05 / 05</span>
+            <span>&mdash;</span>
+            <span>End-to-End Multi-Agent NL &rarr; Cypher &rarr; Neo4j &rarr; SQL Execution</span>
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl text-ink-900 tracking-tight">
+            Natural Language Query &rarr; Cypher Traversal &rarr; Schema-Aware SQL Synthesis &amp; Execution
+          </h2>
+          <p class="text-sm text-ink-600 leading-relaxed">
+            When an underwriter submits a Natural Language question, our LangGraph orchestrator takes the <strong class="text-ink-900 font-semibold">Neo4j Schema + Property Graph JSON</strong>, translates the NL question into <strong class="text-ink-900 font-semibold">Cypher</strong>, executes the Cypher in Neo4j to retrieve physical SQL table mappings, join keys, and synonym predicates, synthesizes an executable <strong class="text-ink-900 font-semibold">SQL query</strong>, and hits the SQL database.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+          <div class="stone-panel rounded-lg px-3.5 py-2 text-center">
+            <div class="text-base font-bold font-mono text-ink-900">94.8%</div>
+            <div class="text-[10px] text-ink-400">Exec Accuracy</div>
+          </div>
+          <div class="stone-panel rounded-lg px-3.5 py-2 text-center">
+            <div class="text-base font-bold font-mono text-ink-900">1.84s</div>
+            <div class="text-[10px] text-ink-400">E2E Latency</div>
+          </div>
+          <div class="stone-panel rounded-lg px-3.5 py-2 text-center">
+            <div class="text-base font-bold font-mono text-ink-900">0.94</div>
+            <div class="text-[10px] text-ink-400">RAGAS Score</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive NL Query Bar -->
+      <div class="editorial-card rounded-xl p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <label class="text-xs font-mono uppercase tracking-wider text-ink-600 font-semibold">
+            Select Preset Underwriting NL Query or Edit Below:
+          </label>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="loadPresetQuery(0)" id="presetBtn-0" class="px-3 py-1 rounded text-xs font-mono border transition">
+              Preset 1: Flood Zone + Roof Hazard + High Claims
+            </button>
+            <button onclick="loadPresetQuery(1)" id="presetBtn-1" class="px-3 py-1 rounded text-xs font-mono border transition">
+              Preset 2: Sprinkler Grade &amp; Protection Class
+            </button>
+            <button onclick="loadPresetQuery(2)" id="presetBtn-2" class="px-3 py-1 rounded text-xs font-mono border transition">
+              Preset 3: Portfolio TIV &amp; Loss Rollup by Roof Class
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-3">
+          <input id="nlQueryInput" type="text"
+            class="flex-1 px-4 py-3 rounded-lg bg-cream-100 border border-cream-300 focus:border-ink-900 focus:bg-white focus:outline-none text-sm text-ink-900 font-medium"
+            value="Find all active commercial properties in Flood Zone AE or A with severe roof hazards from inspection PDFs, total claim losses over $150,000, and underwriting risk score above 75." />
+          <button onclick="executeNl2QueryPipeline()" class="px-6 py-3 rounded-lg text-xs font-mono font-semibold uppercase tracking-wider bg-ink-900 hover:bg-ink-800 text-cream-100 transition shrink-0">
+            Execute NL &rarr; Cypher &rarr; SQL
+          </button>
+        </div>
+
+        <!-- Resolved Synonym Grounding Strip -->
+        <div id="nlGroundingStrip" class="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-mono">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- 4-Panel Execution Trace Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Panel 1: Neo4j Schema + Property Graph JSON -->
+        <div class="lg:col-span-6 editorial-card rounded-xl overflow-hidden flex flex-col">
+          <div class="p-3.5 bg-cream-200/70 border-b border-cream-300 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded bg-ink-900 text-cream-100 font-mono text-xs font-semibold flex items-center justify-center">1</span>
+              <div>
+                <h3 class="text-xs font-bold text-ink-900 uppercase tracking-wider font-mono">Input Schema Context (Neo4j + Property Graph JSON)</h3>
+                <p class="text-[11px] text-ink-400">Passed to LangGraph Agent for ontology-aware grounding</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sage-bg text-sage-text border border-sage-border">Loaded (120ms)</span>
+          </div>
+          <pre id="codeStep5SchemaJson" class="p-4 text-xs font-mono text-ink-900 overflow-auto code-scroll max-h-[320px] bg-[#F7F5F0] flex-1"></pre>
+        </div>
+
+        <!-- Panel 2: NL-to-Cypher & Neo4j Extracted Context -->
+        <div class="lg:col-span-6 editorial-card rounded-xl overflow-hidden flex flex-col">
+          <div class="p-3.5 bg-cream-200/70 border-b border-cream-300 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded bg-ink-900 text-cream-100 font-mono text-xs font-semibold flex items-center justify-center">2</span>
+              <div>
+                <h3 class="text-xs font-bold text-ink-900 uppercase tracking-wider font-mono">NL &rarr; Cypher &amp; Neo4j Graph Metadata Output</h3>
+                <p class="text-[11px] text-ink-400">Executes in Neo4j to extract target SQL tables, joins &amp; columns</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleStep5CypherTab('cypher')" id="btnCypherView-cypher" class="px-2.5 py-1 rounded text-[10px] font-mono transition">Cypher Query</button>
+              <button onclick="toggleStep5CypherTab('neo4jOut')" id="btnCypherView-neo4jOut" class="px-2.5 py-1 rounded text-[10px] font-mono transition">Neo4j Extracted JSON</button>
+            </div>
+          </div>
+          <pre id="codeStep5Cypher" class="p-4 text-xs font-mono text-ink-900 overflow-auto code-scroll max-h-[320px] bg-[#F7F5F0] flex-1"></pre>
+        </div>
+
+        <!-- Panel 3: Cypher-to-SQL Synthesis -->
+        <div class="lg:col-span-5 editorial-card rounded-xl overflow-hidden flex flex-col">
+          <div class="p-3.5 bg-cream-200/70 border-b border-cream-300 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded bg-ink-900 text-cream-100 font-mono text-xs font-semibold flex items-center justify-center">3</span>
+              <div>
+                <h3 class="text-xs font-bold text-ink-900 uppercase tracking-wider font-mono">Cypher &rarr; SQL Synthesis</h3>
+                <p class="text-[11px] text-ink-400">Compiled from Neo4j join path &amp; column lineage</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-sage-bg text-sage-text border border-sage-border">AST Validated</span>
+          </div>
+          <pre id="codeStep5Sql" class="p-4 text-xs font-mono text-ink-900 overflow-auto code-scroll max-h-[340px] bg-[#F7F5F0] flex-1"></pre>
+        </div>
+
+        <!-- Panel 4: SQL Database Execution Result Table -->
+        <div class="lg:col-span-7 editorial-card rounded-xl overflow-hidden flex flex-col">
+          <div class="p-3.5 bg-cream-200/70 border-b border-cream-300 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <span class="w-6 h-6 rounded bg-ink-900 text-cream-100 font-mono text-xs font-semibold flex items-center justify-center">4</span>
+              <div>
+                <h3 class="text-xs font-bold text-ink-900 uppercase tracking-wider font-mono">SQL Database Execution Result Set</h3>
+                <p class="text-[11px] text-ink-400">Records returned after hitting the SQL database engine</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] font-mono">
+              <span class="px-2 py-0.5 rounded bg-sage-bg text-sage-text border border-sage-border">SQL Hit: 410ms</span>
+              <span id="sqlRowsBadge" class="px-2 py-0.5 rounded bg-white text-ink-800 border border-cream-300">4 Rows</span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto flex-1 bg-white p-3">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead id="sqlResultThead" class="border-b border-cream-300 bg-cream-100 text-[11px] text-ink-400 uppercase">
+              </thead>
+              <tbody id="sqlResultTbody" class="divide-y divide-cream-300 text-ink-800">
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FOOTER STEP NAVIGATION -->
+    <div id="bottomStepNav" class="editorial-card rounded-xl p-4 flex items-center justify-between">
+      <button onclick="prevStep()" id="btnPrevStep" class="px-4 py-2 rounded-lg text-xs font-medium bg-white hover:bg-cream-200 text-ink-900 border border-cream-300 transition disabled:opacity-40">
+        &larr; Previous Stage
+      </button>
+      <div class="text-xs font-mono text-ink-600" id="bottomStepIndicator">
+        Stage 01 of 05 &bull; Structured Data &amp; YAML Generation
+      </div>
+      <button onclick="nextStep()" id="btnNextStep" class="px-5 py-2 rounded-lg text-xs font-semibold bg-ink-900 hover:bg-ink-800 text-cream-100 transition disabled:opacity-40">
+        Next Stage &rarr;
+      </button>
+    </div>
+
+  </main>
+
+  <!-- =====================================================================
+       INTERVIEW TALKING POINTS MODAL
+       ===================================================================== -->
+  <div id="cheatSheetModal" class="fixed inset-0 z-50 hidden bg-ink-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="editorial-card max-w-3xl w-full rounded-xl shadow-xl overflow-hidden border border-cream-400">
+      <div class="p-4 bg-cream-200 border-b border-cream-300 flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-ink-400">Interview Pitch Guide &bull; Nexus AI Showcase #1</span>
+          <h3 class="font-serif text-xl text-ink-900">How to Present This Architecture in Your Interview</h3>
+        </div>
+        <button onclick="closeCheatSheetModal()" class="px-3 py-1 rounded bg-white hover:bg-cream-100 text-ink-900 border border-cream-300 text-xs font-mono">
+          Close
+        </button>
+      </div>
+      <div class="p-6 space-y-4 text-xs text-ink-600 leading-relaxed max-h-[75vh] overflow-y-auto bg-white">
+        <div class="p-3.5 rounded-lg bg-cream-100 border border-cream-300">
+          <div class="font-bold text-ink-900 mb-1">1. Structured Sources &amp; Dual-DB Ontology YAMLs (Stage 1)</div>
+          <p>"In commercial insurance underwriting, a single conceptual entity is often split across multiple databases. For example, <code class="font-mono text-ink-900">CommercialProperty</code> has catastrophe &amp; TIV metrics in <strong>Snowflake (`DIM_PROPERTY_ASSET`)</strong> while physical building inspection columns sit in <strong>PostgreSQL (`TBL_BLDG_INSPECTION`)</strong>. Our automated schema discovery pipeline extracts three clean artifacts: <strong>Structure Ontology YAML</strong>, <strong>Semantic YAML</strong> (with standard `ACORD`/`FIBO` mappings and synonyms), and <strong>Mapping YAML</strong>."</p>
+        </div>
+        <div class="p-3.5 rounded-lg bg-cream-100 border border-cream-300">
+          <div class="font-bold text-ink-900 mb-1">2. Unstructured PDF Extraction with OCR + spaCy EntityRuler (Stage 2)</div>
+          <p>"Next, critical underwriting hazards live in unstructured PDF inspection reports and loss-run affidavits. Rather than running slow, expensive LLM calls over thousands of pages, we extract layout blocks with <strong>PyMuPDF (`fitz`) + Tesseract OCR</strong>, apply <strong>spaCy (`en_core_web_trf`) combined with deterministic `EntityRuler` token patterns</strong>, and traverse dependency trees to build an <strong>Unstructured Concept &amp; Relationship YAML</strong>."</p>
+        </div>
+        <div class="p-3.5 rounded-lg bg-cream-100 border border-cream-300">
+          <div class="font-bold text-ink-900 mb-1">3. 3-Tier YAML Reconciliation Cascade (Stage 3)</div>
+          <p>"To reconcile the Structured YAML and Unstructured YAML accurately, we pass candidate concept pairs through three sequential gates: <strong>(1) Fuzzy Matching (&gt;95% Levenshtein/Jaro-Winkler)</strong> for instant deterministic merges, <strong>(2) Semantic Embedding Cosine Similarity (`text-embedding-3-large`)</strong> to classify pairs into <em>Merge</em>, <em>Relate</em>, or <em>Reject</em>, and <strong>(3) LLM Adjudication</strong> strictly for ambiguous domain pairs like matching PDF `Fire_Suppression_Grade` with Snowflake `PROTECTION_CLASS_CD`."</p>
+        </div>
+        <div class="p-3.5 rounded-lg bg-cream-100 border border-cream-300">
+          <div class="font-bold text-ink-900 mb-1">4. Neo4j Virtual Graph &amp; Cypher-to-SQL Execution (Stages 4 &amp; 5)</div>
+          <p>"The reconciled ontology populates our <strong>Neo4j Virtual Graph (VG)</strong> where every node stores its physical SQL table/column lineage, sample values, description, and synonyms. When a user asks a Natural Language question, our agent takes the Neo4j Schema + Property Graph JSON, converts NL into <strong>Cypher</strong> first, executes Cypher on Neo4j to retrieve the exact SQL join path and resolved synonyms, and synthesizes an executable <strong>SQL query</strong> that hits the SQL database with 94.8% execution accuracy."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       APPLICATION DATA & INTERACTIVE LOGIC
+       ===================================================================== -->
+  <script>
+    let currentStep = 1;
+    let isFullScrollView = false;
+    let selectedEntityKey = 'CommercialProperty';
+    let currentStep1YamlTab = 'ontology';
+    let selectedPdfIndex = 0;
+    let currentStep2Tab = 'triples';
+    let selectedReconTier = 0;
+    let selectedReconRowIndex = 9; // Default to LLM Adjudication pair
+    let selectedGraphNodeId = 'CommercialProperty';
+    let selectedPresetQueryIndex = 0;
+    let currentStep5CypherSubTab = 'cypher';
+
+    // -----------------------------------------------------------------------
+    // STAGE 1 DATA: 5 UNDERWRITING ENTITIES (WITH DUAL-DB LINEAGE)
+    // -----------------------------------------------------------------------
+    const structuredEntities = {
+      CommercialProperty: {
+        name: 'CommercialProperty',
+        dualDb: true,
+        sources: ['Snowflake (UW_PROD_DW.PUBLIC)', 'PostgreSQL (POLICY_CORE_DB)'],
+        sourceKeys: ['snowflake', 'postgres'],
+        standardOntology: 'ACORD:CommercialProperty',
+        description: 'Physical insured commercial building or industrial campus evaluated for property & casualty underwriting.',
+        synonyms: ['Insured Premises', 'Risk Location', 'Commercial Building', 'Property Asset', 'Scheduled Facility'],
+        tables: [
+          {
+            db: 'Snowflake',
+            schemaTable: 'UW_PROD_DW.PUBLIC.DIM_PROPERTY_ASSET',
+            pk: 'PROP_ASSET_ID',
+            cols: ['PROP_ASSET_ID', 'TIV_USD', 'FEMA_FLOOD_ZONE', 'PROTECTION_CLASS_CD', 'ROOF_MATERIAL_CD', 'GEO_LAT', 'GEO_LON']
+          },
+          {
+            db: 'PostgreSQL',
+            schemaTable: 'POLICY_CORE_DB.PUBLIC.TBL_BLDG_INSPECTION',
+            pk: 'BLDG_PROP_ID',
+            cols: ['BLDG_PROP_ID', 'YEAR_BUILT', 'TOTAL_SQ_FT', 'OCCUPANCY_CLASS', 'WIRING_GRADE']
+          }
+        ],
+        joinKey: 'Snowflake.DIM_PROPERTY_ASSET.PROP_ASSET_ID = PostgreSQL.TBL_BLDG_INSPECTION.BLDG_PROP_ID'
+      },
+      PolicyContract: {
+        name: 'PolicyContract',
+        dualDb: true,
+        sources: ['PostgreSQL (POLICY_CORE_DB)', 'AWS S3 (s3://nexus-uw-actuarial-lake/)'],
+        sourceKeys: ['postgres', 's3'],
+        standardOntology: 'FIBO:InsurancePolicy',
+        description: 'Commercial underwriting contract governing coverage terms, written premium, deductibles, and peril sublimits.',
+        synonyms: ['Commercial Policy', 'Coverage Contract', 'Underwriting Binder', 'Active Policy', 'Policy Agreement'],
+        tables: [
+          {
+            db: 'PostgreSQL',
+            schemaTable: 'POLICY_CORE_DB.PUBLIC.MSTR_POLICY_HEADER',
+            pk: 'POLICY_NUM',
+            cols: ['POLICY_NUM', 'ORG_ID', 'PROP_ASSET_ID', 'EFF_DATE', 'EXP_DATE', 'WRITTEN_PREMIUM_USD', 'POLICY_STATUS']
+          },
+          {
+            db: 'AWS S3',
+            schemaTable: 's3://nexus-uw-actuarial-lake/uw_endorsement_schedules.parquet',
+            pk: 'POLICY_NUMBER',
+            cols: ['POLICY_NUMBER', 'DEDUCTIBLE_PCT', 'WIND_HAIL_SUBLIMIT_USD', 'COINSURANCE_PCT']
+          }
+        ],
+        joinKey: 'PostgreSQL.MSTR_POLICY_HEADER.POLICY_NUM = S3.uw_endorsement_schedules.POLICY_NUMBER'
+      },
+      UnderwritingRiskScore: {
+        name: 'UnderwritingRiskScore',
+        dualDb: true,
+        sources: ['Snowflake (UW_PROD_DW.PUBLIC)', 'AWS S3 (s3://nexus-uw-actuarial-lake/)'],
+        sourceKeys: ['snowflake', 's3'],
+        standardOntology: 'ACORD:RiskAssessmentMetric',
+        description: 'Composite actuarial and catastrophe risk score combining peril models, storm surge multipliers, and PML.',
+        synonyms: ['Risk Score', 'Underwriting Rating', 'Composite Hazard Index', 'Actuarial Score', 'CAT Risk Score'],
+        tables: [
+          {
+            db: 'Snowflake',
+            schemaTable: 'UW_PROD_DW.PUBLIC.FACT_UW_RISK_SCORES',
+            pk: 'RISK_SCORE_ID',
+            cols: ['RISK_SCORE_ID', 'PROP_ASSET_ID', 'CAT_PERIL_SCORE', 'FIRE_HAZARD_SCORE', 'COMPOSITE_UW_SCORE']
+          },
+          {
+            db: 'AWS S3',
+            schemaTable: 's3://nexus-uw-actuarial-lake/cat_flood_zone_exposures.parquet',
+            pk: 'PROPERTY_ID',
+            cols: ['PROPERTY_ID', 'STORM_SURGE_MULTIPLIER', 'PROBABLE_MAX_LOSS_PML']
+          }
+        ],
+        joinKey: 'Snowflake.FACT_UW_RISK_SCORES.PROP_ASSET_ID = S3.cat_flood_zone_exposures.PROPERTY_ID'
+      },
+      ClaimLossHistory: {
+        name: 'ClaimLossHistory',
+        dualDb: false,
+        sources: ['PostgreSQL (POLICY_CORE_DB)'],
+        sourceKeys: ['postgres'],
+        standardOntology: 'ACORD:ClaimLossRecord',
+        description: 'Historical commercial property claim records tracking incurred losses, reserve amounts, and cause of loss.',
+        synonyms: ['Claim Losses', 'Loss Run Record', 'Prior Claim', 'Incurred Loss Event', 'Historical Payout'],
+        tables: [
+          {
+            db: 'PostgreSQL',
+            schemaTable: 'POLICY_CORE_DB.PUBLIC.TBL_CLAIM_LEDGER',
+            pk: 'CLAIM_ID',
+            cols: ['CLAIM_ID', 'POLICY_NUM', 'LOSS_DATE', 'INCURRED_LOSS_USD', 'PAID_LOSS_USD', 'LOSS_CAUSE']
+          }
+        ],
+        joinKey: 'PostgreSQL.TBL_CLAIM_LEDGER.POLICY_NUM = PostgreSQL.MSTR_POLICY_HEADER.POLICY_NUM'
+      },
+      InsuredOrganization: {
+        name: 'InsuredOrganization',
+        dualDb: false,
+        sources: ['PostgreSQL (POLICY_CORE_DB)'],
+        sourceKeys: ['postgres'],
+        standardOntology: 'FIBO:LegalEntityOrganization',
+        description: 'Corporate policyholder organization owning or operating the insured commercial properties.',
+        synonyms: ['Policyholder', 'Named Insured', 'Corporate Account', 'Client Organization', 'Insured Entity'],
+        tables: [
+          {
+            db: 'PostgreSQL',
+            schemaTable: 'POLICY_CORE_DB.PUBLIC.TBL_INSURED_ORG',
+            pk: 'ORG_ID',
+            cols: ['ORG_ID', 'LEGAL_ENTITY_NAME', 'DUNS_NO', 'NAICS_CD', 'ANNUAL_REVENUE_USD']
+          }
+        ],
+        joinKey: 'PostgreSQL.TBL_INSURED_ORG.ORG_ID = PostgreSQL.MSTR_POLICY_HEADER.ORG_ID'
+      }
+    };
+
+    function getStep1YamlContent(tabType, entityKey) {
+      const ent = structuredEntities[entityKey];
+      if (tabType === 'ontology') {
+        return `# ===================================================================
+# 1. STRUCTURE ONTOLOGY YAML (Entity Classes, Types & Constraints)
+# Focus Concept: ${ent.name} (${ent.dualDb ? 'DRIVEN BY 2 DATABASES' : 'SINGLE DATABASE'})
+# ===================================================================
+ontology_version: "2.4.0"
+domain: "Insurance_Underwriting"
+
+entity_class:
+  name: "${ent.name}"
+  federated_multi_source: ${ent.dualDb}
+  source_systems:
+${ent.sources.map(s => `    - "${s}"`).join('\n')}
+  primary_key_constraint: "canonical_id"
+  attributes:
+${ent.tables.flatMap(t => t.cols.map(c => `    - attribute_name: "${c.toLowerCase()}"\n      data_type: "${c.includes('USD') || c.includes('SCORE') || c.includes('PCT') ? 'DECIMAL(14,2)' : 'VARCHAR(128)'}"\n      origin_table: "${t.schemaTable}"`)).slice(0, 7).join('\n')}
+  foreign_key_Edges:
+    - relationship: "INSURED_UNDER"
+      target_class: "PolicyContract"
+    - relationship: "HAS_RISK_SCORE"
+      target_class: "UnderwritingRiskScore"
+    - relationship: "HAS_LOSS_RECORD"
+      target_class: "ClaimLossHistory"`;
+      } else if (tabType === 'semantic') {
+        return `# ===================================================================
+# 2. SEMANTIC YAML (Definitions, Synonyms & Standard Ontology Mapping)
+# Focus Concept: ${ent.name}
+# ===================================================================
+semantic_version: "2.4.0"
+standard_ontologies:
+  - "ACORD Property & Casualty Standard v2.1"
+  - "FIBO (Financial Industry Business Ontology)"
+
+concept_semantics:
+  concept_id: "${ent.name}"
+  standard_ontology_class: "${ent.standardOntology}"
+  canonical_uri: "urn:nexus:uw:ontology:${ent.name}"
+  business_definition: >
+    ${ent.description}
+  synonyms:
+${ent.synonyms.map(s => `    - "${s}"`).join('\n')}
+  disambiguation_rules:
+    - "Map user references to '${ent.synonyms[0]}' or '${ent.synonyms[1]}' directly to :${ent.name}"`;
+      } else {
+        return `# ===================================================================
+# 3. MAPPING YAML (Dual-Source Column Lineage & Join Expressions)
+# Focus Concept: ${ent.name}
+# ===================================================================
+mapping_version: "2.4.0"
+reconciliation_key: "${ent.joinKey}"
+
+source_mappings:
+${ent.tables.map(t => `  - datastore: "${t.db}"
+    physical_table: "${t.schemaTable}"
+    join_key: "${t.pk}"
+    column_lineage:
+${t.cols.map(c => `      - source_col: "${c}"\n        target_prop: "${ent.name}.${c.toLowerCase()}"\n        transform: "TRIM(UPPER(${c}))"`).slice(0, 5).join('\n')}`).join('\n')}`;
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // STAGE 2 DATA: UNSTRUCTURED PDF DOCUMENTS, SPACY ENTITYRULER & TRIPLES
+    // -----------------------------------------------------------------------
+    const pdfDocuments = [
+      {
+        filename: 'Engineering_Fire_Inspection_Report_2026.pdf',
+        docId: 'DOC-FIRE-2026-884',
+        parserInfo: 'PyMuPDF (fitz) + Tesseract OCR 5.3',
+        htmlContent: `
+          <div class="border-b border-cream-300 pb-2 mb-3 flex justify-between text-[11px] text-ink-400">
+            <span>FIELD ENGINEERING FIRE &amp; STRUCTURAL INSPECTION REPORT</span>
+            <span>REF: DOC-FIRE-2026-884 | PAGE 1 OF 3</span>
+          </div>
+          <p>
+            <strong>1. PREMISES IDENTIFICATION:</strong> Field engineering audit completed for commercial logistics facility
+            <span onclick="inspectPdfSpan('PROP-9042 (Apex Harbor Logistics Center)', 'PROPERTY_REF', '[{\\'TEXT\\': {\\'REGEX\\': \\'^PROP-\\\\d{4}$\\'}}]', '0.99')" class="pdf-span px-1.5 py-0.5 rounded bg-cream-200 text-ink-900 border-ink-900 font-semibold">PROP-9042 (Apex Harbor Logistics Center)</span>
+            insured under policy contract
+            <span onclick="inspectPdfSpan('POL-UW-88412', 'POLICY_REF', '[{\\'TEXT\\': {\\'REGEX\\': \\'^POL-UW-\\\\d{5}$\\'}}]', '0.99')" class="pdf-span px-1.5 py-0.5 rounded bg-cream-200 text-ink-900 border-ink-900 font-semibold">POL-UW-88412</span>.
+          </p>
+          <p class="mt-3">
+            <strong>2. FIRE SUPPRESSION SYSTEM VERIFICATION:</strong> Main high-bay storage is equipped with an operational
+            <span onclick="inspectPdfSpan('NFPA-13 ESFR Wet-Pipe Sprinkler System (Grade A)', 'FIRE_PROTECTION', '[{\\'LOWER\\': \\'sprinkler\\'}, {\\'LOWER\\': \\'system\\'}]', '0.99')" class="pdf-span px-1.5 py-0.5 rounded bg-sage-bg text-sage-text border-sage-text font-semibold">NFPA-13 ESFR Wet-Pipe Sprinkler System (Grade A)</span>
+            delivering 68 PSI static flow pressure.
+          </p>
+          <p class="mt-3">
+            <strong>3. ROOF ENVELOPE DEFICIENCIES:</strong> Infrared moisture thermography identified
+            <span onclick="inspectPdfSpan('severe micro-cracking & ponding water on EPDM roof membrane', 'STRUCTURAL_HAZARD', '[{\\'LOWER\\': \\'pond(ing)?\\'}, {\\'OP\\': \\'*\\'}, {\\'LOWER\\': \\'membrane\\'}]', '0.97')" class="pdf-span px-1.5 py-0.5 rounded bg-ochre-bg text-ochre-text border-ochre-text font-semibold">severe micro-cracking &amp; ponding water on EPDM roof membrane</span>
+            across 18,500 sq. ft. of the north deck.
+          </p>
+        `,
+        triples: [
+          {
+            subj: 'CommercialProperty (PROP-9042)',
+            pred: 'EQUIPPED_WITH',
+            obj: 'FireProtectionSystem (NFPA-13 Wet-Pipe Sprinkler, Grade A)',
+            tokenRule: "[{'LOWER': 'sprinkler'}, {'LOWER': 'system'}]",
+            conf: '0.99'
+          },
+          {
+            subj: 'CommercialProperty (PROP-9042)',
+            pred: 'HAS_STRUCTURAL_HAZARD',
+            obj: 'StructuralHazard (Severe Micro-Cracking & Ponding EPDM Roof)',
+            tokenRule: "[{'LOWER': 'micro-cracking'}, {'OP': '*'}, {'LOWER': 'membrane'}]",
+            conf: '0.97'
+          },
+          {
+            subj: 'CommercialProperty (PROP-9042)',
+            pred: 'INSURED_UNDER',
+            obj: 'PolicyContract (POL-UW-88412)',
+            tokenRule: "[{'TEXT': {'REGEX': '^POL-UW-\\d{5}$'}}]",
+            conf: '0.99'
+          }
+        ]
+      },
+      {
+        filename: 'Commercial_Property_Appraisal_Slip.pdf',
+        docId: 'DOC-APPR-2026-105',
+        parserInfo: 'PyMuPDF Block Extractor + spaCy EntityRuler',
+        htmlContent: `
+          <div class="border-b border-cream-300 pb-2 mb-3 flex justify-between text-[11px] text-ink-400">
+            <span>COMMERCIAL UNDERWRITING PROPERTY APPRAISAL SLIP</span>
+            <span>REF: DOC-APPR-2026-105 | PAGE 1 OF 2</span>
+          </div>
+          <p>
+            <strong>SCHEDULED PREMISES:</strong> Harborview Chemical Blending Plant
+            (<span onclick="inspectPdfSpan('PROP-9108', 'PROPERTY_REF', '[{\\'TEXT\\': {\\'REGEX\\': \\'^PROP-\\\\d{4}$\\'}}]', '0.99')" class="pdf-span px-1.5 py-0.5 rounded bg-cream-200 text-ink-900 border-ink-900 font-semibold">PROP-9108</span>)
+            covered under policy
+            <span onclick="inspectPdfSpan('POL-UW-90115', 'POLICY_REF', '[{\\'TEXT\\': {\\'REGEX\\': \\'^POL-UW-\\\\d{5}$\\'}}]', '0.99')" class="pdf-span px-1.5 py-0.5 rounded bg-cream-200 text-ink-900 border-ink-900 font-semibold">POL-UW-90115</span>.
+          </p>
+          <p class="mt-3">
+            <strong>STRUCTURAL &amp; SAFEGUARD AUDIT:</strong> Roof envelope inspection noted
+            <span onclick="inspectPdfSpan('Severe Ponding & Delaminated Modified Bitumen Roof', 'STRUCTURAL_HAZARD', '[{\\'LOWER\\': \\'delaminated\\'}, {\\'OP\\': \\'*\\'}, {\\'LOWER\\': \\'roof\\'}]', '0.98')" class="pdf-span px-1.5 py-0.5 rounded bg-ochre-bg text-ochre-text border-ochre-text font-semibold">Severe Ponding &amp; Delaminated Modified Bitumen Roof</span>.
+            Fire suppression testing logged a
+            <span onclick="inspectPdfSpan('Non-Compliant Dry-Pipe Sprinkler System (Grade D - Failed Flow Test)', 'FIRE_PROTECTION', '[{\\'LOWER\\': \\'sprinkler\\'}, {\\'LOWER\\': \\'system\\'}]', '0.96')" class="pdf-span px-1.5 py-0.5 rounded bg-sage-bg text-sage-text border-sage-text font-semibold">Non-Compliant Dry-Pipe Sprinkler System (Grade D - Failed Flow Test)</span>.
+          </p>
+        `,
+        triples: [
+          {
+            subj: 'CommercialProperty (PROP-9108)',
+            pred: 'HAS_STRUCTURAL_HAZARD',
+            obj: 'StructuralHazard (Delaminated Modified Bitumen Roof)',
+            tokenRule: "[{'LOWER': 'delaminated'}, {'OP': '*'}, {'LOWER': 'roof'}]",
+            conf: '0.98'
+          },
+          {
+            subj: 'CommercialProperty (PROP-9108)',
+            pred: 'EQUIPPED_WITH',
+            obj: 'FireProtectionSystem (Dry-Pipe Sprinkler System, Grade D)',
+            tokenRule: "[{'LOWER': 'sprinkler'}, {'LOWER': 'system'}]",
+            conf: '0.96'
+          }
+        ]
+      },
+      {
+        filename: 'Historical_Loss_Run_Affidavit.pdf',
+        docId: 'DOC-LOSS-2026-319',
+        parserInfo: 'pdfplumber Table Parser + Tesseract OCR',
+        htmlContent: `
+          <div class="border-b border-cream-300 pb-2 mb-3 flex justify-between text-[11px] text-ink-400">
+            <span>CERTIFIED 5-YEAR COMMERCIAL LOSS RUN AFFIDAVIT</span>
+            <span>REF: DOC-LOSS-2026-319 | PAGE 1 OF 2</span>
+          </div>
+          <p>
+            <strong>INSURED ACCOUNT:</strong> Coastal Cold-Storage Holdings LLC &bull; Policy:
+            <span onclick="inspectPdfSpan('POL-UW-88412', 'POLICY_REF', '[{\\'TEXT\\': {\\'REGEX\\': \\'^POL-UW-\\\\d{5}$\\'}}]', '0.99')" class="pdf-span px-1.5 py-0.5 rounded bg-cream-200 text-ink-900 border-ink-900 font-semibold">POL-UW-88412</span>
+            &bull; Location:
+            <span onclick="inspectPdfSpan('PROP-9042', 'PROPERTY_REF', '[{\\'TEXT\\': {\\'REGEX\\': \\'^PROP-\\\\d{4}$\\'}}]', '0.99')" class="pdf-span px-1.5 py-0.5 rounded bg-cream-200 text-ink-900 border-ink-900 font-semibold">PROP-9042</span>.
+          </p>
+          <p class="mt-3">
+            <strong>PRIOR CLAIM OCCURRENCE:</strong> On August 22, 2025, coastal storm squalls resulted in
+            <span onclick="inspectPdfSpan('Claim #CLM-77210: Storm Surge & Roof Water Ingress ($245,000 Incurred)', 'LOSS_EVENT', '[{\\'LOWER\\': \\'claim\\'}, {\\'TEXT\\': {\\'REGEX\\': \\'^#?CLM-\\\\d+\\' }}]', '0.98')" class="pdf-span px-1.5 py-0.5 rounded bg-burgundy-bg text-burgundy-text border-burgundy-text font-semibold">Claim #CLM-77210: Storm Surge &amp; Roof Water Ingress ($245,000 Incurred)</span>
+            attributed to
+            <span onclick="inspectPdfSpan('EPDM roof seam delamination', 'STRUCTURAL_HAZARD', '[{\\'LOWER\\': \\'roof\\'}, {\\'LOWER\\': \\'seam\\'}, {\\'LOWER\\': \\'delamination\\'}]', '0.95')" class="pdf-span px-1.5 py-0.5 rounded bg-ochre-bg text-ochre-text border-ochre-text font-semibold">EPDM roof seam delamination</span>.
+          </p>
+        `,
+        triples: [
+          {
+            subj: 'CommercialProperty (PROP-9042)',
+            pred: 'HAS_LOSS_RECORD',
+            obj: 'ClaimLossHistory (CLM-77210: $245,000 Storm Surge)',
+            tokenRule: "[{'LOWER': 'claim'}, {'TEXT': {'REGEX': '^#?CLM-\\d+'}}]",
+            conf: '0.98'
+          },
+          {
+            subj: 'ClaimLossHistory (CLM-77210)',
+            pred: 'CAUSED_BY_HAZARD',
+            obj: 'StructuralHazard (EPDM Roof Seam Delamination)',
+            tokenRule: "[{'LOWER': 'roof'}, {'LOWER': 'seam'}, {'LOWER': 'delamination'}]",
+            conf: '0.95'
+          }
+        ]
+      }
+    ];
+
+    const spacyPipelineCode = `# ===================================================================
+# Stage 2: PyMuPDF (fitz) + Tesseract OCR + spaCy EntityRuler Pipeline
+# ===================================================================
+import fitz  # PyMuPDF
+import pytesseract
+import spacy
+from spacy.pipeline import EntityRuler
+
+nlp = spacy.load("en_core_web_trf")
+ruler = nlp.add_pipe("entity_ruler", before="ner")
+
+# Deterministic Rule-Based EntityRuler Patterns
+patterns = [
+    {"label": "PROPERTY_REF", "id": "RULE_PROP_ID",
+     "pattern": [{"TEXT": {"REGEX": r"^PROP-\d{4,6}$"}}]},
+    {"label": "FIRE_PROTECTION", "id": "RULE_SPRINKLER_SYS",
+     "pattern": [{"LOWER": "sprinkler"}, {"LOWER": "system"}]},
+    {"label": "STRUCTURAL_HAZARD", "id": "RULE_ROOF_HAZARD",
+     "pattern": [
+         {"LOWER": {"IN": ["severe", "delaminated", "micro-cracking"]}},
+         {"OP": "*"},
+         {"LOWER": {"IN": ["membrane", "roof", "delamination"]}}
+     ]},
+    {"label": "LOSS_EVENT", "id": "RULE_CLAIM_ID",
+     "pattern": [{"LOWER": "claim"}, {"TEXT": {"REGEX": r"^#?CLM-\d+$"}}]}
+]
+ruler.add_patterns(patterns)
+
+def extract_triples_from_pdf(pdf_path: str):
+    doc_pdf = fitz.open(pdf_path)
+    triples = []
+    for page in doc_pdf:
+        text = page.get_text("text") or pytesseract.image_to_string(page.get_pixmap())
+        doc = nlp(text)
+        for sent in doc.sents:
+            ents = list(sent.ents)
+            if len(ents) >= 2:
+                # Dependency parse tree traversal between subject & object spans
+                triples.append({
+                    "subject": ents[0].text,
+                    "predicate": sent.root.lemma_.upper(),
+                    "object": ents[1].text
+                })
+    return triples`;
+
+    const unstructuredYamlContent = `# ===================================================================
+# GENERATED UNSTRUCTURED CONCEPT & RELATIONSHIP YAML
+# ===================================================================
+unstructured_yaml_version: "2.4.0"
+extraction_pipeline: "PyMuPDF + Tesseract_OCR + spaCy_en_core_web_trf + EntityRuler"
+
+extracted_concepts:
+  - concept: "Commercial_Property"
+    source_pdfs: ["Engineering_Fire_Inspection_Report_2026.pdf", "Commercial_Property_Appraisal_Slip.pdf"]
+    extracted_keys: ["PROP-9042", "PROP-9108"]
+
+  - concept: "FireProtectionSystem"
+    spacy_label: "FIRE_PROTECTION"
+    token_pattern: "[{'LOWER': 'sprinkler'}, {'LOWER': 'system'}]"
+    attributes:
+      - name: "Fire_Suppression_Grade"
+        values: ["Grade A (NFPA-13 Wet-Pipe)", "Grade D (Non-Compliant Dry-Pipe)"]
+      - name: "static_pressure_psi"
+        values: [68]
+
+  - concept: "StructuralHazard"
+    spacy_label: "STRUCTURAL_HAZARD"
+    attributes:
+      - name: "hazard_description"
+        values: ["Severe micro-cracking & ponding water on EPDM roof membrane", "Delaminated Modified Bitumen Roof"]
+      - name: "severity_tier"
+        values: ["SEVERE"]
+
+extracted_relationships:
+  - subject: "Commercial_Property"
+    predicate: "EQUIPPED_WITH"
+    object: "FireProtectionSystem"
+  - subject: "Commercial_Property"
+    predicate: "HAS_STRUCTURAL_HAZARD"
+    object: "StructuralHazard"`;
+
+    // -----------------------------------------------------------------------
+    // STAGE 3 DATA: 3-TIER RECONCILIATION CANDIDATE PAIRS
+    // -----------------------------------------------------------------------
+    const reconciliationPairs = [
+      // GATE 3.1: FUZZY > 95%
+      {
+        tier: 1,
+        structured: 'CommercialProperty (Structure YAML)',
+        unstructured: 'Commercial_Property (PDF Concept YAML)',
+        score: '97.4%',
+        method: 'Gate 3.1: Fuzzy (Jaro-Winkler)',
+        decision: 'MERGE',
+        badgeStyle: 'sage',
+        graphAction: 'Auto-Merge into canonical :CommercialProperty node',
+        detailTitle: 'Gate 3.1 Fuzzy Match (>95% Threshold) — Auto-Merge',
+        detailPayload: `Comparison Pair:
+  Structured YAML Entity  : "CommercialProperty"
+  Unstructured YAML Entity: "Commercial_Property"
+
+Metric Calculation:
+  Levenshtein Ratio : 94.7%
+  Jaro-Winkler Score: 97.4% (Exceeds 95.0% Gate Threshold)
+
+Reconciliation Verdict:
+  DETERMINISTIC AUTO-MERGE -> Unify both definitions into :CommercialProperty.`
+      },
+      {
+        tier: 1,
+        structured: 'CommercialProperty.prop_asset_id',
+        unstructured: 'Property_Ref.prop_asset_id (PDF)',
+        score: '98.8%',
+        method: 'Gate 3.1: Fuzzy (Levenshtein)',
+        decision: 'MERGE',
+        badgeStyle: 'sage',
+        graphAction: 'Unify join key on :CommercialProperty(prop_asset_id)',
+        detailTitle: 'Gate 3.1 Fuzzy Match (>95% Threshold) — Auto-Merge',
+        detailPayload: `Comparison Pair:
+  Structured Column : "CommercialProperty.prop_asset_id" (PROP-9042, PROP-9108)
+  Unstructured Key  : "Property_Ref.prop_asset_id" (PROP-9042, PROP-9108)
+
+Calculated Score: 98.8% >= 95.0%
+Verdict: AUTO-MERGE primary identifier.`
+      },
+      {
+        tier: 1,
+        structured: 'PolicyContract.policy_num (PostgreSQL)',
+        unstructured: 'Policy_Ref.policy_number (PDF)',
+        score: '96.5%',
+        method: 'Gate 3.1: Fuzzy (Jaro-Winkler)',
+        decision: 'MERGE',
+        badgeStyle: 'sage',
+        graphAction: 'Unify identifier on :PolicyContract(policy_num)',
+        detailTitle: 'Gate 3.1 Fuzzy Match (>95% Threshold) — Auto-Merge',
+        detailPayload: `Comparison Pair:
+  Structured Key  : "PolicyContract.policy_num"
+  Unstructured Key: "Policy_Ref.policy_number"
+
+Calculated Score: 96.5% >= 95.0%
+Verdict: AUTO-MERGE.`
+      },
+      {
+        tier: 1,
+        structured: 'ClaimLossHistory.claim_id (PostgreSQL)',
+        unstructured: 'Loss_Event.claim_id (Loss Run PDF)',
+        score: '97.9%',
+        method: 'Gate 3.1: Fuzzy (Jaro-Winkler)',
+        decision: 'MERGE',
+        badgeStyle: 'sage',
+        graphAction: 'Merge claim records on :ClaimLossHistory(claim_id)',
+        detailTitle: 'Gate 3.1 Fuzzy Match (>95% Threshold) — Auto-Merge',
+        detailPayload: `Comparison Pair:
+  Structured Key  : "ClaimLossHistory.claim_id" (CLM-77210)
+  Unstructured Key: "Loss_Event.claim_id" (CLM-77210)
+
+Calculated Score: 97.9% >= 95.0%
+Verdict: AUTO-MERGE.`
+      },
+
+      // GATE 3.2: SEMANTIC EMBEDDINGS (text-embedding-3-large)
+      {
+        tier: 2,
+        structured: 'CommercialProperty.roof_material_cd',
+        unstructured: 'StructuralHazard.roof_membrane_type',
+        score: '0.91 (Cosine)',
+        method: 'Gate 3.2: Semantic Embedding',
+        decision: 'MERGE',
+        badgeStyle: 'sage',
+        graphAction: 'Merge attribute into :CommercialProperty.roof_material_cd',
+        detailTitle: 'Gate 3.2 Semantic Embedding Match (Cosine >= 0.88 -> MERGE)',
+        detailPayload: `Embedding Model: text-embedding-3-large (3072 dimensions)
+  Vector A: "CommercialProperty.roof_material_cd: Exterior roof covering material code (EPDM, Bitumen, TPO)"
+  Vector B: "StructuralHazard.roof_membrane_type: Roof deck membrane material inspected in engineering PDF"
+
+Cosine Similarity: 0.912 (Threshold >= 0.88 => MERGE)
+Action: Merge unstructured membrane material specifics into :CommercialProperty.`
+      },
+      {
+        tier: 2,
+        structured: 'CommercialProperty (Snowflake+SQL)',
+        unstructured: 'FireProtectionSystem (Inspection PDF)',
+        score: '0.83 (Cosine)',
+        method: 'Gate 3.2: Semantic Embedding',
+        decision: 'RELATE',
+        badgeStyle: 'ochre',
+        graphAction: 'Create Edge (:CommercialProperty)-[:EQUIPPED_WITH]->(:FireProtectionSystem)',
+        detailTitle: 'Gate 3.2 Semantic Relationship Discovery (0.72 - 0.87 -> RELATE)',
+        detailPayload: `Embedding Model: text-embedding-3-large
+  Vector A: "CommercialProperty: Insured commercial structure and building envelope"
+  Vector B: "FireProtectionSystem: Interior NFPA-13 sprinkler safeguard system"
+
+Cosine Similarity: 0.834 (Band 0.72 - 0.87 => RELATE)
+Action: Link via directed edge (:CommercialProperty)-[:EQUIPPED_WITH]->(:FireProtectionSystem).`
+      },
+      {
+        tier: 2,
+        structured: 'CommercialProperty (Snowflake+SQL)',
+        unstructured: 'StructuralHazard (Inspection PDF)',
+        score: '0.85 (Cosine)',
+        method: 'Gate 3.2: Semantic Embedding',
+        decision: 'RELATE',
+        badgeStyle: 'ochre',
+        graphAction: 'Create Edge (:CommercialProperty)-[:HAS_STRUCTURAL_HAZARD]->(:StructuralHazard)',
+        detailTitle: 'Gate 3.2 Semantic Relationship Discovery (0.72 - 0.87 -> RELATE)',
+        detailPayload: `Embedding Model: text-embedding-3-large
+Cosine Similarity: 0.851 (Band 0.72 - 0.87 => RELATE)
+Action: Link via directed edge (:CommercialProperty)-[:HAS_STRUCTURAL_HAZARD]->(:StructuralHazard).`
+      },
+      {
+        tier: 2,
+        structured: 'UnderwritingRiskScore (Snowflake+S3)',
+        unstructured: 'StructuralHazard (Inspection PDF)',
+        score: '0.79 (Cosine)',
+        method: 'Gate 3.2: Semantic Embedding',
+        decision: 'RELATE',
+        badgeStyle: 'ochre',
+        graphAction: 'Create Edge (:StructuralHazard)-[:ELEVATES_RISK]->(:UnderwritingRiskScore)',
+        detailTitle: 'Gate 3.2 Semantic Relationship Discovery (0.72 - 0.87 -> RELATE)',
+        detailPayload: `Cosine Similarity: 0.794 (Band 0.72 - 0.87 => RELATE)
+Action: Create causal edge (:StructuralHazard)-[:ELEVATES_RISK]->(:UnderwritingRiskScore).`
+      },
+      {
+        tier: 2,
+        structured: 'PolicyContract.coinsurance_pct (S3)',
+        unstructured: 'FireProtectionSystem.static_pressure_psi (PDF)',
+        score: '0.18 (Cosine)',
+        method: 'Gate 3.2: Semantic Embedding',
+        decision: 'REJECT',
+        badgeStyle: 'burgundy',
+        graphAction: 'Discard candidate pair (Cosine < 0.72)',
+        detailTitle: 'Gate 3.2 Semantic Rejection (Cosine < 0.72 -> REJECT)',
+        detailPayload: `Cosine Similarity: 0.182 (< 0.72 Threshold)
+Verdict: REJECT. Policy coinsurance ratio and hydraulic sprinkler pressure are unrelated numeric properties.`
+      },
+
+      // GATE 3.3: LLM ADJUDICATION CALLS
+      {
+        tier: 3,
+        structured: 'PROTECTION_CLASS_CD (Snowflake)',
+        unstructured: 'Fire_Suppression_Grade (Inspection PDF)',
+        score: 'LLM Call (0.77)',
+        method: 'Gate 3.3: LLM Adjudication',
+        decision: 'RELATE',
+        badgeStyle: 'ink',
+        graphAction: 'Link (:FireProtectionSystem)-[:DETERMINES_PROTECTION_CLASS]->(:CommercialProperty)',
+        detailTitle: 'Gate 3.3 LLM Adjudication — Fire_Suppression_Grade vs PROTECTION_CLASS_CD',
+        detailPayload: `// LLM SYSTEM PROMPT & SCHEMA CONTEXT:
+You are a Senior Insurance Ontology Architect. Adjudicate whether the following ambiguous candidate pair should be MERGED, RELATED, or REJECTED:
+1. Structured Attribute: CommercialProperty.PROTECTION_CLASS_CD (Snowflake DIM_PROPERTY_ASSET, values: 'ISO-1'..'ISO-10')
+2. Unstructured Attribute: FireProtectionSystem.Fire_Suppression_Grade (Inspection PDF, values: 'Grade A NFPA-13', 'Grade D')
+
+// LLM STRUCTURED JSON VERDICT:
+{
+  "verdict": "RELATE",
+  "relationship_type": "DETERMINES_PROTECTION_CLASS",
+  "source_concept": "FireProtectionSystem",
+  "target_concept": "CommercialProperty",
+  "confidence": 0.95,
+  "reasoning": "PROTECTION_CLASS_CD is an ISO municipal & building fire protection rating (1-10), whereas Fire_Suppression_Grade is an engineering inspection grade of the internal sprinkler system. They are not identical columns, but Fire_Suppression_Grade directly influences PROTECTION_CLASS_CD."
+}`
+      },
+      {
+        tier: 3,
+        structured: 'ClaimLossHistory.INCURRED_LOSS_USD (SQL)',
+        unstructured: 'Loss_Event.net_settlement_payout (PDF)',
+        score: 'LLM Call (0.76)',
+        method: 'Gate 3.3: LLM Adjudication',
+        decision: 'MERGE + RULE',
+        badgeStyle: 'ink',
+        graphAction: 'Merge onto :ClaimLossHistory with gross vs net attribute distinction',
+        detailTitle: 'Gate 3.3 LLM Adjudication — Gross Incurred Loss vs Net PDF Payout',
+        detailPayload: `// LLM STRUCTURED JSON VERDICT:
+{
+  "verdict": "MERGE_AS_DISTINCT_PROPERTIES",
+  "target_concept": "ClaimLossHistory",
+  "mapped_properties": [
+    "incurred_loss_usd (Gross SQL Ledger)",
+    "net_payout_usd (Net of Deductible from PDF)"
+  ],
+  "confidence": 0.96,
+  "reasoning": "Both refer to the financial loss of the same claim occurrence (CLM-77210), reconciled on :ClaimLossHistory."
+}`
+      },
+      {
+        tier: 3,
+        structured: 'CommercialProperty.FEMA_FLOOD_ZONE (Snowflake)',
+        unstructured: 'Loss_Event.storm_surge_peril (PDF)',
+        score: 'LLM Call (0.74)',
+        method: 'Gate 3.3: LLM Adjudication',
+        decision: 'RELATE',
+        badgeStyle: 'ink',
+        graphAction: 'Link (:ClaimLossHistory)-[:CORRELATES_WITH_FLOOD_ZONE]->(:CommercialProperty)',
+        detailTitle: 'Gate 3.3 LLM Adjudication — FEMA Flood Zone vs Storm Surge Peril',
+        detailPayload: `// LLM STRUCTURED JSON VERDICT:
+{
+  "verdict": "RELATE",
+  "relationship_type": "CORRELATES_WITH_FLOOD_ZONE",
+  "synonym_enrichment": ["High-Risk Flood Zone", "Flood Zone AE", "Coastal Surge Zone"],
+  "confidence": 0.93
+}`
+      }
+    ];
+
+    // -----------------------------------------------------------------------
+    // STAGE 4 DATA: NEO4J VIRTUAL KNOWLEDGE GRAPH (NODES & EDGES)
+    // -----------------------------------------------------------------------
+    const neo4jNodes = {
+      CommercialProperty: {
+        id: 'CommercialProperty',
+        label: ':CommercialProperty',
+        shortTitle: 'CommercialProperty',
+        x: 410,
+        y: 245,
+        category: 'dual',
+        uri: 'urn:nexus:uw:vg:CommercialProperty',
+        standardOntology: 'ACORD:CommercialProperty',
+        sources: ['Snowflake (DIM_PROPERTY_ASSET)', 'PostgreSQL (TBL_BLDG_INSPECTION)', 'Inspection PDFs'],
+        sourceColumns: [
+          'Snowflake.PUBLIC.DIM_PROPERTY_ASSET.PROP_ASSET_ID (PK)',
+          'Snowflake.PUBLIC.DIM_PROPERTY_ASSET.TIV_USD',
+          'Snowflake.PUBLIC.DIM_PROPERTY_ASSET.FEMA_FLOOD_ZONE',
+          'Snowflake.PUBLIC.DIM_PROPERTY_ASSET.PROTECTION_CLASS_CD',
+          'Snowflake.PUBLIC.DIM_PROPERTY_ASSET.ROOF_MATERIAL_CD',
+          'PostgreSQL.PUBLIC.TBL_BLDG_INSPECTION.BLDG_PROP_ID (FK)',
+          'PostgreSQL.PUBLIC.TBL_BLDG_INSPECTION.YEAR_BUILT',
+          'PostgreSQL.PUBLIC.TBL_BLDG_INSPECTION.OCCUPANCY_CLASS'
+        ],
+        sampleValues: [
+          'prop_asset_id: "PROP-9042" | name: "Apex Harbor Logistics Center"',
+          'fema_flood_zone: "AE" | tiv_usd: $42,500,000 | protection_class_cd: "ISO-2"',
+          'prop_asset_id: "PROP-9108" | name: "Harborview Chemical Blending Plant"',
+          'fema_flood_zone: "A" | tiv_usd: $28,900,000 | protection_class_cd: "ISO-6"'
+        ],
+        description: 'Central federated concept node representing an insured commercial property asset. Combines catastrophe & valuation attributes from Snowflake with physical inspection dimensions from PostgreSQL.',
+        synonyms: ['Insured Premises', 'Commercial Building', 'Property Asset', 'Risk Location', 'Scheduled Facility']
+      },
+      PolicyContract: {
+        id: 'PolicyContract',
+        label: ':PolicyContract',
+        shortTitle: 'PolicyContract',
+        x: 160,
+        y: 120,
+        category: 'dual',
+        uri: 'urn:nexus:uw:vg:PolicyContract',
+        standardOntology: 'FIBO:InsurancePolicy',
+        sources: ['PostgreSQL (MSTR_POLICY_HEADER)', 'AWS S3 (uw_endorsement_schedules.parquet)'],
+        sourceColumns: [
+          'PostgreSQL.PUBLIC.MSTR_POLICY_HEADER.POLICY_NUM (PK)',
+          'PostgreSQL.PUBLIC.MSTR_POLICY_HEADER.WRITTEN_PREMIUM_USD',
+          'PostgreSQL.PUBLIC.MSTR_POLICY_HEADER.POLICY_STATUS',
+          'S3.uw_endorsement_schedules.DEDUCTIBLE_PCT',
+          'S3.uw_endorsement_schedules.WIND_HAIL_SUBLIMIT_USD'
+        ],
+        sampleValues: [
+          'policy_num: "POL-UW-88412" | status: "ACTIVE" | premium: $184,000',
+          'deductible_pct: 5.0% | wind_hail_sublimit_usd: $5,000,000',
+          'policy_num: "POL-UW-90115" | status: "ACTIVE" | premium: $142,500'
+        ],
+        description: 'Commercial underwriting policy contract linking relational policy headers in PostgreSQL with endorsement deductible schedules in AWS S3 Parquet.',
+        synonyms: ['Commercial Policy', 'Coverage Contract', 'Underwriting Binder', 'Active Policy']
+      },
+      InsuredOrganization: {
+        id: 'InsuredOrganization',
+        label: ':InsuredOrganization',
+        shortTitle: 'InsuredOrg',
+        x: 150,
+        y: 380,
+        category: 'single',
+        uri: 'urn:nexus:uw:vg:InsuredOrganization',
+        standardOntology: 'FIBO:LegalEntityOrganization',
+        sources: ['PostgreSQL (TBL_INSURED_ORG)', 'Loss Run Affidavit PDF'],
+        sourceColumns: [
+          'PostgreSQL.PUBLIC.TBL_INSURED_ORG.ORG_ID (PK)',
+          'PostgreSQL.PUBLIC.TBL_INSURED_ORG.LEGAL_ENTITY_NAME',
+          'PostgreSQL.PUBLIC.TBL_INSURED_ORG.DUNS_NO',
+          'PostgreSQL.PUBLIC.TBL_INSURED_ORG.NAICS_CD'
+        ],
+        sampleValues: [
+          'org_id: "ORG-401" | legal_entity_name: "Coastal Cold-Storage Holdings LLC"',
+          'org_id: "ORG-512" | legal_entity_name: "Harborview Industrial Chemicals Inc."'
+        ],
+        description: 'Corporate legal organization that owns the insured commercial premises and holds the policy contract.',
+        synonyms: ['Policyholder', 'Named Insured', 'Corporate Account', 'Client Organization']
+      },
+      ClaimLossHistory: {
+        id: 'ClaimLossHistory',
+        label: ':ClaimLossHistory',
+        shortTitle: 'ClaimLossHistory',
+        x: 410,
+        y: 430,
+        category: 'single',
+        uri: 'urn:nexus:uw:vg:ClaimLossHistory',
+        standardOntology: 'ACORD:ClaimLossRecord',
+        sources: ['PostgreSQL (TBL_CLAIM_LEDGER)', 'Historical_Loss_Run_Affidavit.pdf'],
+        sourceColumns: [
+          'PostgreSQL.PUBLIC.TBL_CLAIM_LEDGER.CLAIM_ID (PK)',
+          'PostgreSQL.PUBLIC.TBL_CLAIM_LEDGER.POLICY_NUM (FK)',
+          'PostgreSQL.PUBLIC.TBL_CLAIM_LEDGER.INCURRED_LOSS_USD',
+          'PDF.Loss_Event.net_settlement_payout'
+        ],
+        sampleValues: [
+          'claim_id: "CLM-77210" | incurred_loss_usd: $245,000 | loss_cause: "Storm Surge"',
+          'claim_id: "CLM-81044" | incurred_loss_usd: $312,800 | loss_cause: "Wind & Roof Ingress"'
+        ],
+        description: 'Historical claim loss node combining structured PostgreSQL claim ledger rows with adjuster notes extracted from Loss Run PDFs.',
+        synonyms: ['Claim Losses', 'Loss Run Record', 'Prior Claim', 'Historical Payout']
+      },
+      UnderwritingRiskScore: {
+        id: 'UnderwritingRiskScore',
+        label: ':UnderwritingRiskScore',
+        shortTitle: 'UWRiskScore',
+        x: 675,
+        y: 380,
+        category: 'dual',
+        uri: 'urn:nexus:uw:vg:UnderwritingRiskScore',
+        standardOntology: 'ACORD:RiskAssessmentMetric',
+        sources: ['Snowflake (FACT_UW_RISK_SCORES)', 'AWS S3 (cat_flood_zone_exposures.parquet)'],
+        sourceColumns: [
+          'Snowflake.PUBLIC.FACT_UW_RISK_SCORES.RISK_SCORE_ID (PK)',
+          'Snowflake.PUBLIC.FACT_UW_RISK_SCORES.COMPOSITE_UW_SCORE',
+          'Snowflake.PUBLIC.FACT_UW_RISK_SCORES.FIRE_HAZARD_SCORE',
+          'S3.cat_flood_zone_exposures.STORM_SURGE_MULTIPLIER',
+          'S3.cat_flood_zone_exposures.PROBABLE_MAX_LOSS_PML'
+        ],
+        sampleValues: [
+          'risk_score_id: "RS-9042" | composite_uw_score: 86.4 | surge_multiplier: 1.45',
+          'risk_score_id: "RS-9108" | composite_uw_score: 91.2 | surge_multiplier: 1.62'
+        ],
+        description: 'Federated quantitative risk assessment node joining Snowflake composite scores with S3 catastrophe flood exposure models.',
+        synonyms: ['Risk Score', 'Underwriting Rating', 'Composite Hazard Index', 'Actuarial Score']
+      },
+      FireProtectionSystem: {
+        id: 'FireProtectionSystem',
+        label: ':FireProtectionSystem',
+        shortTitle: 'FireProtection',
+        x: 410,
+        y: 65,
+        category: 'pdf',
+        uri: 'urn:nexus:uw:vg:FireProtectionSystem',
+        standardOntology: 'ACORD:ProtectiveSafeguard',
+        sources: ['Engineering_Fire_Inspection_Report_2026.pdf', 'SQL.EXTRACTED_PDF_SAFEGUARDS'],
+        sourceColumns: [
+          'SQL_STAGE.EXTRACTED_PDF_SAFEGUARDS.SAFEGUARD_ID (PK)',
+          'SQL_STAGE.EXTRACTED_PDF_SAFEGUARDS.PROP_ASSET_ID (FK)',
+          'SQL_STAGE.EXTRACTED_PDF_SAFEGUARDS.FIRE_SUPPRESSION_GRADE',
+          'SQL_STAGE.EXTRACTED_PDF_SAFEGUARDS.NFPA_COMPLIANCE_STATUS'
+        ],
+        sampleValues: [
+          'fire_suppression_grade: "Grade A (NFPA-13 ESFR Wet-Pipe)" | status: "COMPLIANT"',
+          'fire_suppression_grade: "Grade D (Non-Compliant Dry-Pipe)" | status: "FAILED_FLOW_TEST"'
+        ],
+        description: 'Unstructured concept node extracted via spaCy EntityRuler from fire inspection PDFs and reconciled with Snowflake PROTECTION_CLASS_CD.',
+        synonyms: ['Sprinkler System', 'Fire Suppression System', 'NFPA-13 Safeguard', 'Fire Protection Grade']
+      },
+      StructuralHazard: {
+        id: 'StructuralHazard',
+        label: ':StructuralHazard',
+        shortTitle: 'StructuralHazard',
+        x: 665,
+        y: 120,
+        category: 'pdf',
+        uri: 'urn:nexus:uw:vg:StructuralHazard',
+        standardOntology: 'ACORD:PhysicalPropertyHazard',
+        sources: ['Engineering_Fire_Inspection_Report_2026.pdf', 'Commercial_Property_Appraisal_Slip.pdf', 'SQL.EXTRACTED_PDF_HAZARDS'],
+        sourceColumns: [
+          'SQL_STAGE.EXTRACTED_PDF_HAZARDS.HAZARD_ID (PK)',
+          'SQL_STAGE.EXTRACTED_PDF_HAZARDS.PROP_ASSET_ID (FK)',
+          'SQL_STAGE.EXTRACTED_PDF_HAZARDS.SEVERITY_TIER',
+          'SQL_STAGE.EXTRACTED_PDF_HAZARDS.HAZARD_DESCRIPTION'
+        ],
+        sampleValues: [
+          'severity_tier: "SEVERE" | desc: "Micro-cracking & ponding water on EPDM roof"',
+          'severity_tier: "SEVERE" | desc: "Delaminated Modified Bitumen Roof"'
+        ],
+        description: 'Physical roof and structural deficiency node extracted from engineering inspection PDFs via spaCy dependency parsing.',
+        synonyms: ['Roof Hazard', 'Structural Defect', 'Engineering Deficiency', 'Membrane Ponding']
+      }
+    };
+
+    const neo4jEdges = [
+      { from: 'CommercialProperty', to: 'PolicyContract', label: 'INSURED_UNDER' },
+      { from: 'CommercialProperty', to: 'InsuredOrganization', label: 'OWNED_BY' },
+      { from: 'CommercialProperty', to: 'UnderwritingRiskScore', label: 'HAS_RISK_SCORE' },
+      { from: 'CommercialProperty', to: 'FireProtectionSystem', label: 'EQUIPPED_WITH' },
+      { from: 'CommercialProperty', to: 'ClaimLossHistory', label: 'HAS_LOSS_RECORD' },
+      { from: 'CommercialProperty', to: 'StructuralHazard', label: 'HAS_STRUCTURAL_HAZARD' },
+      { from: 'StructuralHazard', to: 'UnderwritingRiskScore', label: 'ELEVATES_RISK' },
+      { from: 'FireProtectionSystem', to: 'CommercialProperty', label: 'DETERMINES_CLASS' }
+    ];
+
+    // -----------------------------------------------------------------------
+    // STAGE 5 DATA: PRESET NL QUERIES, CYPHER, GRAPH METADATA & SQL
+    // -----------------------------------------------------------------------
+    const presetQueries = [
+      {
+        nlQuery: 'Find all active commercial properties in Flood Zone AE or A with severe roof hazards from inspection PDFs, total claim losses over $150,000, and underwriting risk score above 75.',
+        groundingPills: [
+          { term: '"commercial properties"', mapped: ':CommercialProperty (DIM_PROPERTY_ASSET ⋈ TBL_BLDG_INSPECTION)' },
+          { term: '"Flood Zone AE or A"', mapped: 'FEMA_FLOOD_ZONE IN (\'AE\', \'A\')' },
+          { term: '"severe roof hazards"', mapped: ':StructuralHazard {severity_tier: \'SEVERE\'}' },
+          { term: '"claim losses > $150,000"', mapped: 'SUM(:ClaimLossHistory.incurred_loss_usd) > 150000' },
+          { term: '"risk score > 75"', mapped: ':UnderwritingRiskScore.composite_uw_score > 75' }
+        ],
+        schemaJson: `{
+  "neo4j_virtual_graph": "neo4j://uw-enterprise-vg-graph:7687",
+  "sql_execution_assumption": "CONSOLIDATED_SQL_WAREHOUSE_LAYER",
+  "property_graph_schema": {
+    "nodes": {
+      "CommercialProperty": {
+        "mapped_tables": ["DIM_PROPERTY_ASSET p", "TBL_BLDG_INSPECTION b"],
+        "join_condition": "p.PROP_ASSET_ID = b.BLDG_PROP_ID",
+        "properties": {
+          "prop_asset_id": "p.PROP_ASSET_ID",
+          "fema_flood_zone": "p.FEMA_FLOOD_ZONE",
+          "tiv_usd": "p.TIV_USD"
+        }
+      },
+      "StructuralHazard": {
+        "mapped_tables": ["EXTRACTED_PDF_HAZARDS h"],
+        "fk_join": "p.PROP_ASSET_ID = h.PROP_ASSET_ID",
+        "properties": { "severity_tier": "h.SEVERITY_TIER", "hazard_description": "h.HAZARD_DESCRIPTION" }
+      },
+      "ClaimLossHistory": {
+        "mapped_tables": ["TBL_CLAIM_LEDGER c"],
+        "fk_join": "pol.POLICY_NUM = c.POLICY_NUM",
+        "properties": { "incurred_loss_usd": "c.INCURRED_LOSS_USD" }
+      },
+      "UnderwritingRiskScore": {
+        "mapped_tables": ["FACT_UW_RISK_SCORES r"],
+        "fk_join": "p.PROP_ASSET_ID = r.PROP_ASSET_ID",
+        "properties": { "composite_uw_score": "r.COMPOSITE_UW_SCORE" }
+      }
+    }
+  }
+}`,
+        cypherQuery: `// 1. Multi-Agent NL-to-Cypher Translation over Virtual Knowledge Graph
+MATCH (prop:CommercialProperty)-[:INSURED_UNDER]->(pol:PolicyContract {policy_status: 'ACTIVE'})
+MATCH (prop)-[:HAS_STRUCTURAL_HAZARD]->(haz:StructuralHazard {severity_tier: 'SEVERE'})
+MATCH (prop)-[:HAS_RISK_SCORE]->(risk:UnderwritingRiskScore)
+MATCH (prop)-[:HAS_LOSS_RECORD]->(clm:ClaimLossHistory)
+WHERE prop.fema_flood_zone IN ['AE', 'A']
+  AND risk.composite_uw_score > 75.0
+WITH prop, pol, haz, risk, SUM(clm.incurred_loss_usd) AS total_claim_losses
+WHERE total_claim_losses > 150000
+RETURN prop.prop_asset_id, pol.policy_num, prop.fema_flood_zone,
+       haz.hazard_description, total_claim_losses, risk.composite_uw_score,
+       prop._sql_lineage, haz._sql_lineage, clm._sql_lineage`,
+        neo4jExtractedMetadata: `// 2. Metadata Extracted by Executing Cypher in Neo4j (Passed to SQL Synthesizer)
+{
+  "target_sql_tables": [
+    "DIM_PROPERTY_ASSET p",
+    "TBL_BLDG_INSPECTION b",
+    "MSTR_POLICY_HEADER pol",
+    "EXTRACTED_PDF_HAZARDS h",
+    "FACT_UW_RISK_SCORES r",
+    "TBL_CLAIM_LEDGER c"
+  ],
+  "resolved_join_graph": [
+    "p.PROP_ASSET_ID = b.BLDG_PROP_ID",
+    "p.PROP_ASSET_ID = pol.PROP_ASSET_ID",
+    "p.PROP_ASSET_ID = h.PROP_ASSET_ID",
+    "p.PROP_ASSET_ID = r.PROP_ASSET_ID",
+    "pol.POLICY_NUM = c.POLICY_NUM"
+  ],
+  "resolved_predicates": [
+    "pol.POLICY_STATUS = 'ACTIVE'",
+    "p.FEMA_FLOOD_ZONE IN ('AE', 'A')",
+    "h.SEVERITY_TIER = 'SEVERE'",
+    "r.COMPOSITE_UW_SCORE > 75.0",
+    "HAVING SUM(c.INCURRED_LOSS_USD) > 150000"
+  ]
+}`,
+        sqlQuery: `-- 3. Synthesized Executable SQL Query Hitting the Consolidated SQL Database
+SELECT 
+    p.PROP_ASSET_ID AS property_id,
+    pol.POLICY_NUM AS policy_number,
+    p.FEMA_FLOOD_ZONE AS flood_zone,
+    b.OCCUPANCY_CLASS AS occupancy,
+    h.HAZARD_DESCRIPTION AS pdf_extracted_roof_hazard,
+    SUM(c.INCURRED_LOSS_USD) AS total_claim_loss_usd,
+    r.COMPOSITE_UW_SCORE AS uw_risk_score
+FROM DIM_PROPERTY_ASSET p
+INNER JOIN TBL_BLDG_INSPECTION b 
+    ON p.PROP_ASSET_ID = b.BLDG_PROP_ID
+INNER JOIN MSTR_POLICY_HEADER pol 
+    ON p.PROP_ASSET_ID = pol.PROP_ASSET_ID
+INNER JOIN EXTRACTED_PDF_HAZARDS h 
+    ON p.PROP_ASSET_ID = h.PROP_ASSET_ID
+INNER JOIN FACT_UW_RISK_SCORES r 
+    ON p.PROP_ASSET_ID = r.PROP_ASSET_ID
+INNER JOIN TBL_CLAIM_LEDGER c 
+    ON pol.POLICY_NUM = c.POLICY_NUM
+WHERE pol.POLICY_STATUS = 'ACTIVE'
+  AND p.FEMA_FLOOD_ZONE IN ('AE', 'A')
+  AND h.SEVERITY_TIER = 'SEVERE'
+  AND r.COMPOSITE_UW_SCORE > 75.0
+GROUP BY 
+    p.PROP_ASSET_ID, pol.POLICY_NUM, p.FEMA_FLOOD_ZONE,
+    b.OCCUPANCY_CLASS, h.HAZARD_DESCRIPTION, r.COMPOSITE_UW_SCORE
+HAVING SUM(c.INCURRED_LOSS_USD) > 150000
+ORDER BY r.COMPOSITE_UW_SCORE DESC;`,
+        columns: ['PROPERTY_ID', 'POLICY_NUMBER', 'FLOOD_ZONE', 'OCCUPANCY', 'PDF_EXTRACTED_ROOF_HAZARD', 'TOTAL_CLAIM_LOSS_USD', 'UW_RISK_SCORE'],
+        rows: [
+          ['PROP-9108', 'POL-UW-90115', 'Zone A', 'Chemical Blending', 'Severe Ponding & Delaminated Modified Bitumen Roof (DOC-APPR-105)', '$312,800', '91.2'],
+          ['PROP-9042', 'POL-UW-88412', 'Zone AE', 'Cold-Storage Logistics', 'Severe micro-cracking & ponding water on EPDM membrane (DOC-FIRE-884)', '$245,000', '86.4'],
+          ['PROP-9215', 'POL-UW-91402', 'Zone AE', 'Port Terminal Warehouse', 'Class-3 Seam Uplift & Standing Water on TPO Roof (DOC-FIRE-912)', '$194,250', '82.7'],
+          ['PROP-9304', 'POL-UW-93018', 'Zone A', 'Marine Food Processing', 'Blistered Built-Up Roof Deck & Parapet Flashing Failure (DOC-FIRE-940)', '$168,900', '78.9']
+        ]
+      },
+      {
+        nlQuery: 'Show insured organizations and commercial properties where PDF fire suppression grade is Grade D (Non-Compliant) alongside their Snowflake ISO protection class and risk score.',
+        groundingPills: [
+          { term: '"insured organizations"', mapped: ':InsuredOrganization (TBL_INSURED_ORG)' },
+          { term: '"fire suppression grade"', mapped: ':FireProtectionSystem.fire_suppression_grade' },
+          { term: '"ISO protection class"', mapped: ':CommercialProperty.protection_class_cd' }
+        ],
+        schemaJson: `{
+  "neo4j_virtual_graph": "neo4j://uw-enterprise-vg-graph:7687",
+  "reconciled_llm_edge": "(:FireProtectionSystem)-[:DETERMINES_CLASS]->(:CommercialProperty)"
+}`,
+        cypherQuery: `MATCH (prop:CommercialProperty)-[:OWNED_BY]->(org:InsuredOrganization)
+MATCH (prop)-[:EQUIPPED_WITH]->(fps:FireProtectionSystem)
+MATCH (prop)-[:HAS_RISK_SCORE]->(risk:UnderwritingRiskScore)
+WHERE fps.fire_suppression_grade CONTAINS 'Grade D'
+RETURN org.legal_entity_name, prop.prop_asset_id, prop.protection_class_cd,
+       fps.fire_suppression_grade, risk.composite_uw_score`,
+        neo4jExtractedMetadata: `{
+  "target_sql_tables": [
+    "DIM_PROPERTY_ASSET p",
+    "MSTR_POLICY_HEADER pol",
+    "TBL_INSURED_ORG org",
+    "EXTRACTED_PDF_SAFEGUARDS s",
+    "FACT_UW_RISK_SCORES r"
+  ],
+  "resolved_join_graph": [
+    "p.PROP_ASSET_ID = pol.PROP_ASSET_ID",
+    "pol.ORG_ID = org.ORG_ID",
+    "p.PROP_ASSET_ID = s.PROP_ASSET_ID",
+    "p.PROP_ASSET_ID = r.PROP_ASSET_ID"
+  ]
+}`,
+        sqlQuery: `SELECT 
+    org.LEGAL_ENTITY_NAME AS insured_organization,
+    p.PROP_ASSET_ID AS property_id,
+    p.PROTECTION_CLASS_CD AS snowflake_iso_class,
+    s.FIRE_SUPPRESSION_GRADE AS pdf_sprinkler_grade,
+    r.COMPOSITE_UW_SCORE AS uw_risk_score
+FROM DIM_PROPERTY_ASSET p
+INNER JOIN MSTR_POLICY_HEADER pol ON p.PROP_ASSET_ID = pol.PROP_ASSET_ID
+INNER JOIN TBL_INSURED_ORG org ON pol.ORG_ID = org.ORG_ID
+INNER JOIN EXTRACTED_PDF_SAFEGUARDS s ON p.PROP_ASSET_ID = s.PROP_ASSET_ID
+INNER JOIN FACT_UW_RISK_SCORES r ON p.PROP_ASSET_ID = r.PROP_ASSET_ID
+WHERE s.FIRE_SUPPRESSION_GRADE LIKE '%Grade D%'
+ORDER BY r.COMPOSITE_UW_SCORE DESC;`,
+        columns: ['INSURED_ORGANIZATION', 'PROPERTY_ID', 'SNOWFLAKE_ISO_CLASS', 'PDF_SPRINKLER_GRADE', 'UW_RISK_SCORE'],
+        rows: [
+          ['Harborview Industrial Chemicals Inc.', 'PROP-9108', 'ISO-6', 'Grade D (Non-Compliant Dry-Pipe - Failed Flow Test)', '91.2'],
+          ['Delta Bulk Packaging Corp.', 'PROP-9411', 'ISO-7', 'Grade D (Impaired Riser Check Valve)', '84.5']
+        ]
+      },
+      {
+        nlQuery: 'Aggregate total insured value (TIV), average composite underwriting risk score, and total incurred claim losses grouped by roof material code for active policies.',
+        groundingPills: [
+          { term: '"total insured value (TIV)"', mapped: 'SUM(:CommercialProperty.tiv_usd)' },
+          { term: '"average composite risk score"', mapped: 'AVG(:UnderwritingRiskScore.composite_uw_score)' },
+          { term: '"grouped by roof material"', mapped: 'GROUP BY :CommercialProperty.roof_material_cd' }
+        ],
+        schemaJson: `{
+  "neo4j_virtual_graph": "neo4j://uw-enterprise-vg-graph:7687",
+  "aggregation_mode": "PORTFOLIO_ROLLUP_BY_ROOF_MATERIAL"
+}`,
+        cypherQuery: `MATCH (prop:CommercialProperty)-[:INSURED_UNDER]->(pol:PolicyContract {policy_status: 'ACTIVE'})
+MATCH (prop)-[:HAS_RISK_SCORE]->(risk:UnderwritingRiskScore)
+OPTIONAL MATCH (prop)-[:HAS_LOSS_RECORD]->(clm:ClaimLossHistory)
+RETURN prop.roof_material_cd AS roof_material,
+       COUNT(DISTINCT prop.prop_asset_id) AS property_count,
+       SUM(DISTINCT prop.tiv_usd) AS total_tiv_usd,
+       AVG(risk.composite_uw_score) AS avg_risk_score,
+       SUM(clm.incurred_loss_usd) AS total_claims_usd`,
+        neo4jExtractedMetadata: `{
+  "target_sql_tables": [
+    "DIM_PROPERTY_ASSET p",
+    "MSTR_POLICY_HEADER pol",
+    "FACT_UW_RISK_SCORES r",
+    "TBL_CLAIM_LEDGER c"
+  ]
+}`,
+        sqlQuery: `SELECT 
+    p.ROOF_MATERIAL_CD AS roof_material,
+    COUNT(DISTINCT p.PROP_ASSET_ID) AS property_count,
+    SUM(DISTINCT p.TIV_USD) AS total_tiv_usd,
+    ROUND(AVG(r.COMPOSITE_UW_SCORE), 1) AS avg_risk_score,
+    COALESCE(SUM(c.INCURRED_LOSS_USD), 0) AS total_claims_usd
+FROM DIM_PROPERTY_ASSET p
+INNER JOIN MSTR_POLICY_HEADER pol ON p.PROP_ASSET_ID = pol.PROP_ASSET_ID
+INNER JOIN FACT_UW_RISK_SCORES r ON p.PROP_ASSET_ID = r.PROP_ASSET_ID
+LEFT JOIN TBL_CLAIM_LEDGER c ON pol.POLICY_NUM = c.POLICY_NUM
+WHERE pol.POLICY_STATUS = 'ACTIVE'
+GROUP BY p.ROOF_MATERIAL_CD
+ORDER BY avg_risk_score DESC;`,
+        columns: ['ROOF_MATERIAL', 'PROPERTY_COUNT', 'TOTAL_TIV_USD', 'AVG_RISK_SCORE', 'TOTAL_CLAIMS_USD'],
+        rows: [
+          ['MOD_BITUMEN (Modified Bitumen)', '14', '$384,200,000', '85.4', '$1,840,500'],
+          ['EPDM_MEMBRANE (Single-Ply EPDM)', '28', '$712,500,000', '79.2', '$2,190,000'],
+          ['TPO_MECH (Mechanically Fastened TPO)', '19', '$495,000,000', '68.1', '$640,200'],
+          ['STANDING_SEAM_METAL', '11', '$310,000,000', '54.6', '$185,000']
+        ]
+      }
+    ];
+
+    // -----------------------------------------------------------------------
+    // NAVIGATION & VIEW MODE CONTROLLERS
+    // -----------------------------------------------------------------------
+    function updateStepperUI() {
+      const stepLabels = [
+        'Stage 01 of 05 • Structured Data & Ontology YAML Generation',
+        'Stage 02 of 05 • Unstructured PDF NLP & EntityRuler Pipeline',
+        'Stage 03 of 05 • 3-Tier Ontology Reconciliation Engine',
+        'Stage 04 of 05 • Neo4j Virtual Knowledge Graph (VG Graph)',
+        'Stage 05 of 05 • Multi-Agent NL -> Cypher -> SQL Execution'
+      ];
+      document.getElementById('bottomStepIndicator').textContent = stepLabels[currentStep - 1];
+      document.getElementById('btnPrevStep').disabled = (currentStep === 1);
+      document.getElementById('btnNextStep').disabled = (currentStep === 5);
+
+      for (let i = 1; i <= 5; i++) {
+        const tab = document.getElementById(`stepTab-${i}`);
+        const badge = document.getElementById(`stepBadge-${i}`);
+        const sec = document.getElementById(`stepSection-${i}`);
+
+        if (isFullScrollView) {
+          sec.classList.remove('hidden');
+        } else {
+          if (i === currentStep) sec.classList.remove('hidden');
+          else sec.classList.add('hidden');
+        }
+
+        if (i === currentStep) {
+          tab.className = 'text-left p-2.5 rounded-lg border border-ink-900 bg-white shadow-xs transition-all flex items-center gap-2.5';
+          badge.className = 'w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold shrink-0 bg-ink-900 text-cream-100';
+        } else {
+          tab.className = 'text-left p-2.5 rounded-lg border border-cream-300 bg-cream-100 hover:bg-white transition-all flex items-center gap-2.5';
+          badge.className = 'w-6 h-6 rounded flex items-center justify-center font-mono text-[11px] font-semibold shrink-0 bg-cream-200 text-ink-600 border border-cream-300';
+        }
+      }
+    }
+
+    function toggleViewMode() {
+      isFullScrollView = !isFullScrollView;
+      const btn = document.getElementById('btnViewMode');
+      const bottomNav = document.getElementById('bottomStepNav');
+      if (isFullScrollView) {
+        btn.textContent = 'View: All Stages (Full Scroll)';
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-ink-900 text-cream-100 border border-ink-900 transition';
+        bottomNav.classList.add('hidden');
+        renderNeo4jGraph();
+        renderNodeInspector(selectedGraphNodeId);
+      } else {
+        btn.textContent = 'View: Step-by-Step';
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-cream-200 text-ink-900 border border-cream-300 transition';
+        bottomNav.classList.remove('hidden');
+      }
+      updateStepperUI();
+    }
+
+    function goToStep(stepNum) {
+      currentStep = stepNum;
+      updateStepperUI();
+      if (stepNum === 4 || isFullScrollView) {
+        renderNeo4jGraph();
+        renderNodeInspector(selectedGraphNodeId);
+      }
+      if (isFullScrollView) {
+        document.getElementById(`stepSection-${stepNum}`).scrollIntoView({ behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function nextStep() {
+      if (currentStep < 5) goToStep(currentStep + 1);
+    }
+
+    function prevStep() {
+      if (currentStep > 1) goToStep(currentStep - 1);
+    }
+
+    // -----------------------------------------------------------------------
+    // STAGE 1 RENDERING
+    // -----------------------------------------------------------------------
+    function renderStep1Entities() {
+      const container = document.getElementById('structuredEntityList');
+      container.innerHTML = '';
+
+      Object.keys(structuredEntities).forEach(key => {
+        const ent = structuredEntities[key];
+        const isSelected = (key === selectedEntityKey);
+
+        const card = document.createElement('div');
+        card.onclick = () => {
+          selectedEntityKey = key;
+          renderStep1Entities();
+        };
+        card.className = `cursor-pointer rounded-xl p-3.5 transition-all border ${
+          isSelected
+            ? 'bg-white border-2 border-ink-900 shadow-sm'
+            : 'editorial-card hover:bg-cream-100'
+        }`;
+
+        const sourceBadges = ent.sources.map(src =>
+          `<span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cream-200 text-ink-800 border border-cream-300">${src}</span>`
+        ).join('');
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-bold text-sm text-ink-900">${ent.name}</span>
+              ${ent.dualDb
+                ? '<span class="px-2 py-0.5 text-[10px] font-mono font-semibold bg-sage-bg text-sage-text border border-sage-border rounded">2 DBs Driven</span>'
+                : '<span class="px-2 py-0.5 text-[10px] font-mono bg-cream-200 text-ink-600 border border-cream-300 rounded">1 DB</span>'
+              }
+            </div>
+            <span class="text-[10px] font-mono text-ink-400">${ent.standardOntology}</span>
+          </div>
+          <p class="text-xs text-ink-600 mt-1.5 leading-relaxed">${ent.description}</p>
+          <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
+            ${sourceBadges}
+          </div>
+          <div class="mt-2 pt-2 border-t border-cream-300 text-[11px] font-mono text-ink-400">
+            <span class="text-ink-600 font-medium">Synonyms:</span> ${ent.synonyms.slice(0, 3).join(', ')}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Highlight contributing DB cards on the left
+      const activeEntity = structuredEntities[selectedEntityKey];
+      ['snowflake', 'postgres', 's3'].forEach(dbKey => {
+        const dbEl = document.getElementById(`dbCard-${dbKey}`);
+        if (activeEntity.sourceKeys.includes(dbKey)) {
+          dbEl.classList.add('border-ink-900', 'ring-1', 'ring-ink-900');
+          dbEl.classList.remove('opacity-45');
+        } else {
+          dbEl.classList.remove('border-ink-900', 'ring-1', 'ring-ink-900');
+          dbEl.classList.add('opacity-45');
+        }
+      });
+
+      renderStep1Yaml();
+    }
+
+    function switchStep1Yaml(tab) {
+      currentStep1YamlTab = tab;
+      renderStep1Yaml();
+    }
+
+    function renderStep1Yaml() {
+      const filenames = {
+        ontology: 'structure_ontology.yaml',
+        semantic: 'semantic_ontology.yaml',
+        mapping: 'federated_mapping.yaml'
+      };
+
+      ['ontology', 'semantic', 'mapping'].forEach(t => {
+        const btn = document.getElementById(`yamlTab-${t}`);
+        if (t === currentStep1YamlTab) {
+          btn.className = 'px-2.5 py-1.5 rounded text-xs font-mono font-semibold bg-ink-900 text-cream-100 transition';
+        } else {
+          btn.className = 'px-2.5 py-1.5 rounded text-xs font-mono font-medium bg-white text-ink-600 hover:text-ink-900 border border-cream-300 transition';
+        }
+      });
+
+      document.getElementById('yamlFilenameLabel').textContent = filenames[currentStep1YamlTab];
+      document.getElementById('yamlSelectedEntityBadge').textContent = `Entity: ${selectedEntityKey}`;
+      document.getElementById('step1YamlCode').textContent = getStep1YamlContent(currentStep1YamlTab, selectedEntityKey);
+    }
+
+    function copyTextById(elementId, btnEl) {
+      const text = document.getElementById(elementId).textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      const original = btnEl.textContent;
+      btnEl.textContent = 'Copied';
+      setTimeout(() => { btnEl.textContent = original; }, 1200);
+    }
+
+    // -----------------------------------------------------------------------
+    // STAGE 2 RENDERING
+    // -----------------------------------------------------------------------
+    function selectPdfDoc(idx) {
+      selectedPdfIndex = idx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`pdfTab-${i}`);
+        if (i === idx) {
+          btn.className = 'px-2.5 py-1.5 rounded text-xs font-mono font-semibold bg-ink-900 text-cream-100 transition';
+        } else {
+          btn.className = 'px-2.5 py-1.5 rounded text-xs font-mono font-medium bg-white text-ink-600 hover:text-ink-900 border border-cream-300 transition';
+        }
+      }
+      document.getElementById('pdfViewerContent').innerHTML = pdfDocuments[idx].htmlContent;
+      renderStep2RightPanel();
+    }
+
+    function cyclePdfDocument() {
+      selectPdfDoc((selectedPdfIndex + 1) % pdfDocuments.length);
+    }
+
+    function inspectPdfSpan(text, label, rulePattern, conf) {
+      document.getElementById('spanInspectorDetail').innerHTML = `
+        Span: <strong>"${text}"</strong> &bull;
+        Label: <strong>${label}</strong> &bull;
+        EntityRuler Pattern: <code class="bg-white px-1.5 py-0.5 rounded border border-cream-300">${rulePattern}</code> &bull;
+        Confidence: <strong>${conf}</strong>
+      `;
+    }
+
+    function switchStep2RightTab(tab) {
+      currentStep2Tab = tab;
+      renderStep2RightPanel();
+    }
+
+    function renderStep2RightPanel() {
+      ['triples', 'spacy', 'yaml'].forEach(t => {
+        const btn = document.getElementById(`step2Tab-${t}`);
+        if (t === currentStep2Tab) {
+          btn.className = 'px-3 py-1.5 rounded text-xs font-mono font-semibold bg-ink-900 text-cream-100 transition';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded text-xs font-mono font-medium bg-white text-ink-600 hover:text-ink-900 border border-cream-300 transition';
+        }
+      });
+
+      const container = document.getElementById('step2RightContainer');
+      const doc = pdfDocuments[selectedPdfIndex];
+
+      if (currentStep2Tab === 'triples') {
+        const triplesHtml = doc.triples.map(tr => `
+          <div class="p-3.5 rounded-lg bg-white border border-cream-300 space-y-2.5">
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <span class="text-ink-600">EntityRuler Token Pattern: <code class="bg-cream-100 px-1.5 py-0.5 rounded border border-cream-300 text-ink-900">${tr.tokenRule}</code></span>
+              <span class="px-2 py-0.5 rounded bg-sage-bg text-sage-text border border-sage-border font-semibold">Conf: ${tr.conf}</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center text-xs font-mono">
+              <div class="p-2 rounded bg-cream-100 border border-cream-300 text-ink-900">
+                <div class="text-[9px] uppercase text-ink-400">Subject Entity</div>
+                <div class="font-semibold truncate" title="${tr.subj}">${tr.subj}</div>
+              </div>
+              <div class="p-2 rounded bg-ink-900 text-cream-100 text-center font-semibold">
+                <div class="text-[9px] uppercase text-cream-400">Predicate Edge</div>
+                -[:${tr.pred}]->
+              </div>
+              <div class="p-2 rounded bg-cream-100 border border-cream-300 text-ink-900">
+                <div class="text-[9px] uppercase text-ink-400">Object Concept</div>
+                <div class="font-semibold truncate" title="${tr.obj}">${tr.obj}</div>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+        container.innerHTML = `
+          <div class="space-y-3">
+            <div class="p-3 rounded-lg bg-cream-200 border border-cream-300 text-xs flex items-center justify-between">
+              <div>
+                <div class="font-bold text-ink-900">${doc.filename}</div>
+                <div class="text-ink-600 font-mono text-[11px]">Engine: ${doc.parserInfo}</div>
+              </div>
+              <span class="px-2.5 py-1 rounded font-mono text-xs bg-white text-ink-900 border border-cream-300 font-semibold">${doc.triples.length} Concept Triples</span>
+            </div>
+            ${triplesHtml}
+          </div>
+        `;
+      } else if (currentStep2Tab === 'spacy') {
+        container.innerHTML = `<pre class="text-xs font-mono text-ink-900 leading-relaxed">${spacyPipelineCode}</pre>`;
+      } else {
+        container.innerHTML = `<pre class="text-xs font-mono text-ink-900 leading-relaxed">${unstructuredYamlContent}</pre>`;
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // STAGE 3 RENDERING
+    // -----------------------------------------------------------------------
+    function selectReconTier(tierNum) {
+      selectedReconTier = tierNum;
+      [1, 2, 3].forEach(t => {
+        const card = document.getElementById(`reconTierCard-${t}`);
+        if (tierNum === t) {
+          card.classList.add('border-2', 'border-ink-900');
+        } else {
+          card.classList.remove('border-2', 'border-ink-900');
+        }
+      });
+      renderReconTable();
+    }
+
+    function renderReconTable() {
+      const tbody = document.getElementById('reconTableBody');
+      tbody.innerHTML = '';
+
+      reconciliationPairs.forEach((pair, idx) => {
+        if (selectedReconTier !== 0 && pair.tier !== selectedReconTier) return;
+
+        const isSelected = (idx === selectedReconRowIndex);
+        const tr = document.createElement('tr');
+        tr.onclick = () => {
+          selectedReconRowIndex = idx;
+          renderReconTable();
+          renderReconInspector(idx);
+        };
+        tr.className = `cursor-pointer transition ${
+          isSelected ? 'bg-cream-200' : 'bg-white hover:bg-cream-100'
+        }`;
+
+        let badgeClass = 'bg-sage-bg text-sage-text border-sage-border';
+        if (pair.badgeStyle === 'ochre') badgeClass = 'bg-ochre-bg text-ochre-text border-ochre-border';
+        if (pair.badgeStyle === 'burgundy') badgeClass = 'bg-burgundy-bg text-burgundy-text border-burgundy-border';
+        if (pair.badgeStyle === 'ink') badgeClass = 'bg-ink-900 text-cream-100 border-ink-900';
+
+        tr.innerHTML = `
+          <td class="py-3 px-3.5 text-ink-900 font-medium">${pair.structured}</td>
+          <td class="py-3 px-3.5 text-ink-800">${pair.unstructured}</td>
+          <td class="py-3 px-3">
+            <div class="text-ink-900 font-semibold">${pair.score}</div>
+            <div class="text-[10px] text-ink-400">${pair.method}</div>
+          </td>
+          <td class="py-3 px-3.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${badgeClass}">${pair.decision}</span>
+            <div class="text-[10px] text-ink-600 mt-1">${pair.graphAction}</div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderReconInspector(idx) {
+      const pair = reconciliationPairs[idx];
+      document.getElementById('reconInspectorTitle').textContent = pair.detailTitle;
+      document.getElementById('reconInspectorBadge').textContent = `${pair.decision} (${pair.score})`;
+
+      const body = document.getElementById('reconInspectorBody');
+      body.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div class="p-3 rounded-lg bg-white border border-cream-300">
+            <div class="text-[10px] font-mono uppercase text-ink-400">Structured YAML Candidate</div>
+            <div class="font-mono font-bold text-ink-900 mt-0.5">${pair.structured}</div>
+          </div>
+          <div class="p-3 rounded-lg bg-white border border-cream-300">
+            <div class="text-[10px] font-mono uppercase text-ink-400">Unstructured PDF Candidate</div>
+            <div class="font-mono font-bold text-ink-900 mt-0.5">${pair.unstructured}</div>
+          </div>
+        </div>
+        <div class="p-3 rounded-lg bg-cream-200/70 border border-cream-300">
+          <div class="text-[10px] font-mono uppercase text-ink-600 font-semibold mb-0.5">Resulting Neo4j Graph Action</div>
+          <div class="font-mono text-ink-900 font-medium">${pair.graphAction}</div>
+        </div>
+        <div>
+          <div class="text-[10px] font-mono uppercase text-ink-400 mb-1.5">Gate Scoring / LLM Adjudication Payload</div>
+          <pre class="p-3.5 rounded-lg bg-[#F7F5F0] border border-cream-300 font-mono text-xs text-ink-900 overflow-x-auto leading-relaxed whitespace-pre-wrap">${pair.detailPayload}</pre>
+        </div>
+      `;
+    }
+
+    function stepThroughReconciliation() {
+      selectedReconRowIndex = (selectedReconRowIndex + 1) % reconciliationPairs.length;
+      renderReconTable();
+      renderReconInspector(selectedReconRowIndex);
+    }
+
+    // -----------------------------------------------------------------------
+    // STAGE 4 RENDERING (NEO4J VIRTUAL GRAPH)
+    // -----------------------------------------------------------------------
+    function renderNeo4jGraph() {
+      const edgesGroup = document.getElementById('svgEdgesGroup');
+      const nodesGroup = document.getElementById('svgNodesGroup');
+      const pillsContainer = document.getElementById('nodeQuickPills');
+
+      edgesGroup.innerHTML = '';
+      nodesGroup.innerHTML = '';
+      pillsContainer.innerHTML = '';
+
+      // Render quick selector pills
+      Object.values(neo4jNodes).forEach(node => {
+        const pill = document.createElement('button');
+        pill.onclick = () => selectGraphNode(node.id);
+        const isActive = (node.id === selectedGraphNodeId);
+        pill.className = `px-2.5 py-1 rounded text-[11px] font-mono transition shrink-0 ${
+          isActive
+            ? 'bg-ink-900 text-cream-100 font-semibold'
+            : 'bg-white text-ink-600 border border-cream-300 hover:text-ink-900'
+        }`;
+        pill.textContent = node.label;
+        pillsContainer.appendChild(pill);
+      });
+
+      // Render Directed Edges
+      neo4jEdges.forEach(edge => {
+        const src = neo4jNodes[edge.from];
+        const dst = neo4jNodes[edge.to];
+        const isConnected = (edge.from === selectedGraphNodeId || edge.to === selectedGraphNodeId);
+
+        const midX = (src.x + dst.x) / 2;
+        const midY = (src.y + dst.y) / 2;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', src.x);
+        line.setAttribute('y1', src.y);
+        line.setAttribute('x2', dst.x);
+        line.setAttribute('y2', dst.y);
+        line.setAttribute('stroke', isConnected ? '#111111' : '#D0C9BD');
+        line.setAttribute('stroke-width', isConnected ? '2.2' : '1.4');
+        line.setAttribute('marker-end', isConnected ? 'url(#arrow-ink)' : 'url(#arrow-muted)');
+        if (isConnected) line.setAttribute('class', 'animated-edge');
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const labelWidth = edge.label.length * 6.2 + 12;
+        rect.setAttribute('x', midX - labelWidth / 2);
+        rect.setAttribute('y', midY - 9);
+        rect.setAttribute('width', labelWidth);
+        rect.setAttribute('height', 18);
+        rect.setAttribute('rx', 4);
+        rect.setAttribute('fill', isConnected ? '#111111' : '#FFFFFF');
+        rect.setAttribute('stroke', isConnected ? '#111111' : '#E4E0D8');
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', midX);
+        text.setAttribute('y', midY + 3);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', isConnected ? '#FAF8F5' : '#4A4843');
+        text.setAttribute('font-size', '9');
+        text.setAttribute('font-family', 'JetBrains Mono, monospace');
+        text.textContent = edge.label;
+
+        g.appendChild(line);
+        g.appendChild(rect);
+        g.appendChild(text);
+        edgesGroup.appendChild(g);
+      });
+
+      // Render Graph Nodes
+      Object.values(neo4jNodes).forEach(node => {
+        const isSelected = (node.id === selectedGraphNodeId);
+
+        let circleFill = '#FFFFFF';
+        let circleStroke = '#111111';
+        let textFill = '#111111';
+        let subTextFill = '#78756E';
+        let subLabel = '2 DBs';
+
+        if (node.category === 'dual') {
+          circleFill = isSelected ? '#111111' : '#FFFFFF';
+          textFill = isSelected ? '#FAF8F5' : '#111111';
+          subTextFill = isSelected ? '#D0C9BD' : '#4A4843';
+          subLabel = '2 DBs Driven';
+        } else if (node.category === 'single') {
+          circleFill = isSelected ? '#111111' : '#F3EFEA';
+          textFill = isSelected ? '#FAF8F5' : '#111111';
+          subTextFill = isSelected ? '#D0C9BD' : '#4A4843';
+          subLabel = 'SQL + PDF';
+        } else if (node.category === 'pdf') {
+          circleFill = isSelected ? '#111111' : '#FDF3E7';
+          circleStroke = isSelected ? '#111111' : '#7A4B0A';
+          textFill = isSelected ? '#FAF8F5' : '#111111';
+          subTextFill = isSelected ? '#D0C9BD' : '#7A4B0A';
+          subLabel = 'PDF NLP';
+        }
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'cursor-pointer');
+        g.onclick = () => selectGraphNode(node.id);
+
+        if (isSelected) {
+          const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          halo.setAttribute('cx', node.x);
+          halo.setAttribute('cy', node.y);
+          halo.setAttribute('r', 46);
+          halo.setAttribute('fill', 'none');
+          halo.setAttribute('stroke', '#111111');
+          halo.setAttribute('stroke-width', '1.5');
+          halo.setAttribute('stroke-dasharray', '4 4');
+          g.appendChild(halo);
+        }
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x);
+        circle.setAttribute('cy', node.y);
+        circle.setAttribute('r', 38);
+        circle.setAttribute('fill', circleFill);
+        circle.setAttribute('stroke', circleStroke);
+        circle.setAttribute('stroke-width', isSelected ? '3' : '2');
+
+        const titleText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        titleText.setAttribute('x', node.x);
+        titleText.setAttribute('y', node.y - 3);
+        titleText.setAttribute('text-anchor', 'middle');
+        titleText.setAttribute('fill', textFill);
+        titleText.setAttribute('font-size', '9.5');
+        titleText.setAttribute('font-weight', '700');
+        titleText.setAttribute('font-family', 'JetBrains Mono, monospace');
+        titleText.textContent = node.shortTitle;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 12);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('fill', subTextFill);
+        subText.setAttribute('font-size', '8.5');
+        subText.setAttribute('font-family', 'JetBrains Mono, monospace');
+        subText.textContent = subLabel;
+
+        g.appendChild(circle);
+        g.appendChild(titleText);
+        g.appendChild(subText);
+        nodesGroup.appendChild(g);
+      });
+    }
+
+    function selectGraphNode(nodeId) {
+      selectedGraphNodeId = nodeId;
+      renderNeo4jGraph();
+      renderNodeInspector(nodeId);
+    }
+
+    function renderNodeInspector(nodeId) {
+      const node = neo4jNodes[nodeId];
+      document.getElementById('inspectorNodeTitle').textContent = node.label;
+      document.getElementById('inspectorOntologyBadge').textContent = node.standardOntology;
+
+      const container = document.getElementById('nodeInspectorContent');
+      container.innerHTML = `
+        <div class="p-3 rounded-lg bg-cream-100 border border-cream-300">
+          <div class="flex items-center justify-between text-[10px] font-mono uppercase text-ink-400 mb-1">
+            <span>Business Description</span>
+            <span>${node.uri}</span>
+          </div>
+          <p class="text-ink-800 leading-relaxed">${node.description}</p>
+        </div>
+
+        <div>
+          <div class="text-[10px] font-mono uppercase text-ink-400 font-semibold mb-1.5">Contributing Databases &amp; PDFs</div>
+          <div class="flex flex-wrap gap-1.5">
+            ${node.sources.map(s => `<span class="px-2.5 py-1 rounded bg-cream-200 text-ink-900 border border-cream-300 font-mono text-[11px] font-medium">${s}</span>`).join('')}
+          </div>
+        </div>
+
+        <div>
+          <div class="text-[10px] font-mono uppercase text-ink-400 font-semibold mb-1.5">Synonyms List (Grounded in Neo4j)</div>
+          <div class="flex flex-wrap gap-1.5">
+            ${node.synonyms.map(syn => `<span class="px-2 py-0.5 rounded bg-sage-bg text-sage-text border border-sage-border font-mono text-[11px]">"${syn}"</span>`).join('')}
+          </div>
+        </div>
+
+        <div>
+          <div class="text-[10px] font-mono uppercase text-ink-400 font-semibold mb-1.5">Mapped Source Columns</div>
+          <div class="p-3 rounded-lg bg-[#F7F5F0] border border-cream-300 space-y-1 font-mono text-[11px] text-ink-900">
+            ${node.sourceColumns.map(col => `<div>&bull; ${col}</div>`).join('')}
+          </div>
+        </div>
+
+        <div>
+          <div class="text-[10px] font-mono uppercase text-ink-400 font-semibold mb-1.5">Sample Property Values</div>
+          <div class="space-y-1.5 font-mono text-[11px] text-ink-800">
+            ${node.sampleValues.map(val => `<div class="p-2 rounded bg-cream-100 border border-cream-300">${val}</div>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // -----------------------------------------------------------------------
+    // STAGE 5 RENDERING (NL -> CYPHER -> NEO4J -> SQL)
+    // -----------------------------------------------------------------------
+    function loadPresetQuery(idx) {
+      selectedPresetQueryIndex = idx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`presetBtn-${i}`);
+        if (i === idx) {
+          btn.className = 'px-3 py-1 rounded text-xs font-mono border border-ink-900 bg-ink-900 text-cream-100 font-semibold transition';
+        } else {
+          btn.className = 'px-3 py-1 rounded text-xs font-mono border border-cream-300 bg-white text-ink-600 hover:text-ink-900 transition';
+        }
+      }
+
+      const q = presetQueries[idx];
+      document.getElementById('nlQueryInput').value = q.nlQuery;
+      executeNl2QueryPipeline();
+    }
+
+    function toggleStep5CypherTab(subTab) {
+      currentStep5CypherSubTab = subTab;
+      const q = presetQueries[selectedPresetQueryIndex];
+      const btnCypher = document.getElementById('btnCypherView-cypher');
+      const btnNeo4j = document.getElementById('btnCypherView-neo4jOut');
+
+      if (subTab === 'cypher') {
+        btnCypher.className = 'px-2.5 py-1 rounded text-[10px] font-mono bg-ink-900 text-cream-100 font-semibold';
+        btnNeo4j.className = 'px-2.5 py-1 rounded text-[10px] font-mono bg-white text-ink-600 border border-cream-300';
+        document.getElementById('codeStep5Cypher').textContent = q.cypherQuery;
+      } else {
+        btnNeo4j.className = 'px-2.5 py-1 rounded text-[10px] font-mono bg-ink-900 text-cream-100 font-semibold';
+        btnCypher.className = 'px-2.5 py-1 rounded text-[10px] font-mono bg-white text-ink-600 border border-cream-300';
+        document.getElementById('codeStep5Cypher').textContent = q.neo4jExtractedMetadata;
+      }
+    }
+
+    function executeNl2QueryPipeline() {
+      const q = presetQueries[selectedPresetQueryIndex];
+
+      const groundingEl = document.getElementById('nlGroundingStrip');
+      groundingEl.innerHTML = `<span class="text-ink-400">Resolved Concept Grounding:</span>` + q.groundingPills.map(g => `
+        <span class="px-2 py-0.5 rounded bg-cream-100 border border-cream-300 text-ink-800">
+          <strong class="text-ink-900">${g.term}</strong> &rarr; <span class="text-sage-text font-medium">${g.mapped}</span>
+        </span>
+      `).join('');
+
+      document.getElementById('codeStep5SchemaJson').textContent = q.schemaJson;
+      toggleStep5CypherTab(currentStep5CypherSubTab);
+      document.getElementById('codeStep5Sql').textContent = q.sqlQuery;
+
+      document.getElementById('sqlRowsBadge').textContent = `${q.rows.length} Rows Returned`;
+      const thead = document.getElementById('sqlResultThead');
+      const tbody = document.getElementById('sqlResultTbody');
+
+      thead.innerHTML = `<tr>${q.columns.map(c => `<th class="py-2.5 px-3 font-semibold">${c}</th>`).join('')}</tr>`;
+      tbody.innerHTML = q.rows.map(row => `
+        <tr class="hover:bg-cream-100 transition">
+          ${row.map((cell, cIdx) => `<td class="py-2.5 px-3 ${cIdx === 0 ? 'text-ink-900 font-bold' : ''}">${cell}</td>`).join('')}
+        </tr>
+      `).join('');
+    }
+
+    // -----------------------------------------------------------------------
+    // MODAL HANDLERS & INIT
+    // -----------------------------------------------------------------------
+    function openCheatSheetModal() {
+      document.getElementById('cheatSheetModal').classList.remove('hidden');
+    }
+
+    function closeCheatSheetModal() {
+      document.getElementById('cheatSheetModal').classList.add('hidden');
+    }
+
+    window.onload = function () {
+      updateStepperUI();
+      renderStep1Entities();
+      selectPdfDoc(0);
+      selectReconTier(0);
+      renderReconInspector(selectedReconRowIndex);
+      renderNeo4jGraph();
+      renderNodeInspector('CommercialProperty');
+      loadPresetQuery(0);
+    };
+  </script>
+</body>
+</html>

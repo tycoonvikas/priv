@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniRisk AI: Autonomous Underwriting &amp; Spatial Risk Verification — Architecture Walkthrough</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+          },
+          colors: {
+            cream: {
+              50: '#FDFCFA',
+              100: '#F6F4EE',
+              200: '#F5F3ED',
+              300: '#EAE6DC',
+              400: '#E4E0D6',
+              500: '#D5CFC2'
+            },
+            navy: {
+              700: '#1E3A8A',
+              800: '#1B367B',
+              900: '#13265C'
+            },
+            forest: {
+              600: '#216E53',
+              700: '#18543E'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F5F3ED;
+      color: #18181B;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+    /* Editorial White Stage Card */
+    .stage-card {
+      background-color: #FFFFFF;
+      border: 1px solid #E4E0D6;
+      border-radius: 18px;
+      box-shadow: 0 2px 14px rgba(28, 25, 23, 0.04);
+    }
+    /* Recessed Warm Cream Inner Well */
+    .cream-well {
+      background-color: #F6F4EE;
+      border: 1px solid #E5E1D8;
+      border-radius: 14px;
+    }
+    /* Crisp White Sub-Card inside Cream Well */
+    .white-subcard {
+      background-color: #FFFFFF;
+      border: 1px solid #E6E3DA;
+      border-radius: 10px;
+    }
+    /* Progress Track & Bars */
+    .progress-track {
+      background-color: #E6E4DD;
+      height: 10px;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .code-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .code-scroll::-webkit-scrollbar-track {
+      background: #F6F4EE;
+    }
+    .code-scroll::-webkit-scrollbar-thumb {
+      background: #C7C2B6;
+      border-radius: 4px;
+    }
+    .code-scroll::-webkit-scrollbar-thumb:hover {
+      background: #1B367B;
+    }
+    @keyframes dashFlow {
+      to {
+        stroke-dashoffset: -24;
+      }
+    }
+    .animated-edge {
+      stroke-dasharray: 5 5;
+      animation: dashFlow 1.2s linear infinite;
+    }
+    .entity-highlight {
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+    .entity-highlight:hover {
+      transform: translateY(-1px);
+      filter: brightness(0.96);
+    }
+    .active-svg-node {
+      filter: drop-shadow(0 3px 8px rgba(27, 54, 123, 0.22));
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-16 selection:bg-[#EEF2FF] selection:text-[#1B367B]">
+
+  <!-- =====================================================================
+       TOP NAVIGATION & EDITORIAL HEADER BAR
+       ===================================================================== -->
+  <header class="sticky top-0 z-40 border-b border-[#E4E0D6] bg-[#FDFCFA]/95 backdrop-blur-md">
+    <div class="max-w-[1380px] mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-[#1B367B] flex items-center justify-center font-mono font-bold text-white text-xs shadow-sm">
+          Nexus
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <span class="text-[11px] font-mono font-semibold uppercase tracking-widest text-[#1E3A8A]">
+              NEXUS TECHNOLOGIES R&amp;D &bull; PROPERTY INSURANCE DOMAIN
+            </span>
+            <span class="px-2.5 py-0.5 text-[11px] font-mono font-medium bg-[#EEF2FF] text-[#1E3A8A] border border-[#C7D2FE] rounded-full">
+              Cosmos VLM + Autonomous Web RAG
+            </span>
+          </div>
+          <h1 class="font-serif text-xl sm:text-2xl text-zinc-900 tracking-tight leading-snug">
+            OmniRisk AI: Autonomous Underwriting &amp; Spatial Risk Verification Architecture
+          </h1>
+        </div>
+      </div>
+
+      <!-- Right Header Controls -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#F6F4EE] border border-[#E5E1D8] text-xs font-mono text-zinc-700">
+          <span class="w-2 h-2 rounded-full bg-[#216E53]"></span>
+          <span>Presenter: <strong class="text-zinc-900">Vikas Rajput</strong></span>
+        </div>
+
+        <button id="btnViewMode" onclick="toggleViewMode()" class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-[#F6F4EE] hover:bg-[#EAE6DC] text-zinc-800 border border-[#D5CFC2] transition">
+          View: All Stages Stacked
+        </button>
+
+        <button id="btnAutoWalkthrough" onclick="toggleAutoDemo()" class="px-3.5 py-1.5 rounded-lg text-xs font-mono font-semibold bg-[#1B367B] hover:bg-[#13265C] text-white shadow-sm flex items-center gap-1.5 transition">
+          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+          <span id="autoDemoText">Auto-Play Pipeline</span>
+        </button>
+
+        <button onclick="openCheatSheetModal()" class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-white hover:bg-[#F6F4EE] text-[#1B367B] border border-[#C7D2FE] transition flex items-center gap-1.5">
+          <span>Interview Talking Points</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 5-STAGE NAVIGATION BAR -->
+    <div class="border-t border-[#EAE6DC] bg-[#F6F4EE]">
+      <div class="max-w-[1380px] mx-auto px-4 sm:px-6 py-2">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="pipelineStepper">
+          <button onclick="navigateToStage(1)" id="stepTab-1" class="text-left p-2 rounded-xl border transition-all flex items-center gap-2.5">
+            <div id="stepBadge-1" class="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0">01</div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-zinc-900 truncate">EXIF, GPS &amp; Deed Gate</div>
+              <div class="text-[10px] font-mono text-zinc-500 truncate">Haversine &le;50m + APN</div>
+            </div>
+          </button>
+
+          <button onclick="navigateToStage(2)" id="stepTab-2" class="text-left p-2 rounded-xl border transition-all flex items-center gap-2.5">
+            <div id="stepBadge-2" class="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0">02</div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-zinc-900 truncate">L1 Zone VLM &amp; Latent Space</div>
+              <div class="text-[10px] font-mono text-zinc-500 truncate">Cosmos (98%) vs Qwen/Nemotron</div>
+            </div>
+          </button>
+
+          <button onclick="navigateToStage(3)" id="stepTab-3" class="text-left p-2 rounded-xl border transition-all flex items-center gap-2.5">
+            <div id="stepBadge-3" class="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0">03</div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-zinc-900 truncate">Autonomous Web Agents</div>
+              <div class="text-[10px] font-mono text-zinc-500 truncate">Redfin / Flutter / Zillow RAG</div>
+            </div>
+          </button>
+
+          <button onclick="navigateToStage(4)" id="stepTab-4" class="text-left p-2 rounded-xl border transition-all flex items-center gap-2.5">
+            <div id="stepBadge-4" class="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0">04</div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-zinc-900 truncate">Fine-Tuned Cosmos L2</div>
+              <div class="text-[10px] font-mono text-zinc-500 truncate">QLoRA + Multi-Modal Graph</div>
+            </div>
+          </button>
+
+          <button onclick="navigateToStage(5)" id="stepTab-5" class="text-left p-2 rounded-xl border transition-all flex items-center gap-2.5">
+            <div id="stepBadge-5" class="w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0">05</div>
+            <div class="min-w-0">
+              <div class="text-xs font-semibold text-zinc-900 truncate">Quote Engine &amp; RAGAS</div>
+              <div class="text-[10px] font-mono text-zinc-500 truncate">&lt;200ms Quote + 0.92 Faithfulness</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       MAIN EDITORIAL WORKSPACE
+       ===================================================================== -->
+  <main class="flex-1 max-w-[1380px] w-full mx-auto px-4 sm:px-6 py-6 space-y-7">
+
+    <!-- LEGACY MANUAL FLOW VS. AUTOMATED OMNIRISK AI COMPARISON STRIP -->
+    <section class="stage-card p-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+        <div class="lg:col-span-5 cream-well p-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-mono font-semibold uppercase tracking-wider text-[#9F1239]">
+              LEGACY WORKFLOW &bull; MANUAL HUMAN ANNOTATION
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-100 text-[#9F1239] border border-rose-200">
+              18–25 Mins / Property
+            </span>
+          </div>
+          <p class="text-xs text-zinc-700 leading-relaxed">
+            Homeowners upload 12+ photos of every room and exterior angle. Previously, human underwriters manually sorted photos into <strong>L1 zones</strong> (Rooftop, Bathroom, Balcony, Interior, Exterior) and manually inspected <strong>L2 structural materials</strong> (Flooring, Roof Material, Frame, Patio Cover, Window Glazing), spending 20+ minutes looking up unclear details across property websites.
+          </p>
+        </div>
+
+        <div class="lg:col-span-2 flex flex-col items-center justify-center text-center py-1">
+          <div class="px-3 py-1 rounded-full bg-[#EEF2FF] border border-[#C7D2FE] text-[#1E3A8A] font-mono text-xs font-bold">
+            REPLACED BY &rarr;
+          </div>
+          <div class="text-[11px] font-mono text-zinc-500 mt-1">
+            vLLM + LangGraph RAG
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 cream-well p-4 border-l-4 border-l-[#216E53]">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[11px] font-mono font-semibold uppercase tracking-wider text-[#216E53]">
+              AUTOMATED ARCHITECTURE &bull; COSMOS VLM + WEB AGENTS
+            </span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+              &lt; 200ms Quote SLA
+            </span>
+          </div>
+          <p class="text-xs text-zinc-700 leading-relaxed">
+            <strong>NVIDIA Cosmos VLM</strong> automates L1 tagging at <strong>98.0% accuracy</strong>. A <strong>QLoRA fine-tuned Cosmos L2 model</strong> pairs with <strong>autonomous Playwright web agents</strong> (crawling Redfin, Flutter Homes, Zillow &amp; Building Permits) to resolve occluded/glare images, slashing manual lookup times by <strong>85%</strong> alongside GPS &amp; deed fraud verification.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         STAGE 01: EXIF, GEOSPATIAL HAVERSINE & OWNERSHIP FRAUD GATE
+         ===================================================================== -->
+    <section id="stepSection-1" class="stage-card p-6 sm:p-7 space-y-6">
+      <!-- Editorial Header Row -->
+      <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#EAE6DC]">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#1B367B] text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 mt-0.5">
+            01
+          </div>
+          <div>
+            <div class="text-xs font-mono uppercase tracking-widest text-[#1E3A8A] font-semibold">
+              STAGE 1 &bull; GEOSPATIAL EXIF TELEMETRY + DEED TITLE VERIFICATION
+            </div>
+            <h2 class="font-serif text-2xl sm:text-[26px] text-zinc-900 mt-0.5">
+              Geodesic GPS Haversine &amp; Ownership Fraud Gate (EXIF + APN)
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <div class="flex items-center gap-1.5 bg-[#F6F4EE] p-1 rounded-xl border border-[#E5E1D8]">
+            <button onclick="selectPropertySubmission(0)" id="subBtn-0" class="px-2.5 py-1 rounded-lg text-xs font-mono transition">
+              Case 1: Austin TX (Pass)
+            </button>
+            <button onclick="selectPropertySubmission(1)" id="subBtn-1" class="px-2.5 py-1 rounded-lg text-xs font-mono transition">
+              Case 2: Miami FL (Glare + Pass)
+            </button>
+            <button onclick="selectPropertySubmission(2)" id="subBtn-2" class="px-2.5 py-1 rounded-lg text-xs font-mono transition">
+              Case 3: LA Spoof (Blocked)
+            </button>
+          </div>
+          <span id="stage1TopPill" class="px-4 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#EEF2FF] text-[#1E3A8A] border border-[#C7D2FE]">
+            P = 99.2% Authentic
+          </span>
+        </div>
+      </div>
+
+      <!-- Main 2-Column Content Row (Matching Reference Screenshot Layout) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left 5 Cols: Cream Well with 2D Geospatial Verification Latent Space Plot -->
+        <div class="lg:col-span-5 cream-well p-4 space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-zinc-600 uppercase tracking-wider">GEODESIC GPS DRIFT VS DEED TITLE MATCH</span>
+            <span id="stage1PlotStatusTag" class="font-bold text-[#216E53]">&bull; VERIFIED #1</span>
+          </div>
+
+          <!-- Crisp White Plot Container -->
+          <div class="white-subcard p-3">
+            <svg id="stage1GeodesicSvg" viewBox="0 0 430 250" class="w-full h-auto select-none">
+              <!-- Axes -->
+              <line x1="48" y1="20" x2="48" y2="212" stroke="#D4D0C8" stroke-width="1.2" />
+              <line x1="48" y1="212" x2="405" y2="212" stroke="#D4D0C8" stroke-width="1.2" />
+
+              <!-- Axis Labels -->
+              <text x="225" y="238" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono">
+                Haversine GPS Drift from Parcel Centroid (m) &rarr;
+              </text>
+              <text x="16" y="118" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono" transform="rotate(-90 16,118)">
+                Deed Title Similarity &rarr;
+              </text>
+
+              <!-- Cluster C3: Neighbor / Wrong Parcel Drift (Warm Ochre Dashed Ellipse) -->
+              <ellipse cx="220" cy="88" rx="68" ry="34" fill="#FEF3C7" fill-opacity="0.7" stroke="#92400E" stroke-width="1.5" stroke-dasharray="4 3" />
+              <text x="220" y="91" text-anchor="middle" fill="#92400E" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C3: Adjacent Lot Drift
+              </text>
+
+              <!-- Cluster C2: Corporate / Trust APN Match (Royal Blue Dashed Ellipse) -->
+              <ellipse cx="148" cy="142" rx="62" ry="30" fill="#EEF2FF" fill-opacity="0.85" stroke="#1E3A8A" stroke-width="1.5" stroke-dasharray="4 3" />
+              <text x="148" y="145" text-anchor="middle" fill="#1E3A8A" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C2: LLC Trust Deed
+              </text>
+
+              <!-- Cluster C4: Spoofed Stock Photo / Photoshop (Crimson Dashed Ellipse) -->
+              <ellipse cx="332" cy="168" rx="58" ry="28" fill="#FFE4E6" fill-opacity="0.75" stroke="#9F1239" stroke-width="1.5" stroke-dasharray="4 3" />
+              <text x="332" y="171" text-anchor="middle" fill="#9F1239" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C4: GPS Spoof / SIU
+              </text>
+
+              <!-- Cluster C1: Verified Parcel Footprint <=50m (Forest Green Dashed Ellipse) -->
+              <ellipse cx="122" cy="64" rx="64" ry="29" fill="#ECFDF5" fill-opacity="0.9" stroke="#216E53" stroke-width="1.6" stroke-dasharray="4 3" />
+              <text x="122" y="67" text-anchor="middle" fill="#216E53" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C1: Verified Parcel
+              </text>
+
+              <!-- Dynamic Active Submission Marker -->
+              <g id="stage1ActivePlotMarker">
+                <circle cx="115" cy="62" r="11" fill="#216E53" fill-opacity="0.22" />
+                <circle cx="115" cy="62" r="5.5" fill="#216E53" stroke="#FFFFFF" stroke-width="1.5" />
+              </g>
+            </svg>
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] font-mono text-zinc-600 px-1">
+            <span id="stage1CameraMeta">Device: Apple iPhone 16 Pro (12 Photos)</span>
+            <span id="stage1ApnMeta" class="text-[#1B367B] font-semibold">APN-04-9921-0084-TX</span>
+          </div>
+        </div>
+
+        <!-- Right 7 Cols: Horizontal Confidence Bars + Metric Boxes + Code Toggle -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 id="stage1RightHeadline" class="font-mono text-sm font-bold text-zinc-900">
+              Gate Verdict: Verified Parcel &amp; Warranty Deed Owner Match
+            </h3>
+            <div class="flex items-center gap-1.5">
+              <button onclick="switchStage1View('bars')" id="s1ViewBtn-bars" class="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white">
+                Telemetry Bars
+              </button>
+              <button onclick="switchStage1View('code')" id="s1ViewBtn-code" class="px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]">
+                FastAPI + EXIF Code
+              </button>
+            </div>
+          </div>
+
+          <!-- Telemetry Bars View -->
+          <div id="stage1BarsContainer" class="space-y-3.5">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <!-- Code View (Hidden by default, toggled via button) -->
+          <div id="stage1CodeContainer" class="hidden cream-well p-3">
+            <pre id="stage1CodePre" class="white-subcard p-3.5 text-xs font-mono text-zinc-800 overflow-x-auto code-scroll max-h-[240px] leading-relaxed"></pre>
+          </div>
+
+          <!-- 2 Metric Summary Boxes at Bottom Right -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div class="cream-well p-3.5">
+              <div class="text-xs font-mono text-zinc-500">Haversine Geodesic Drift (Max 50m)</div>
+              <div id="stage1MetricDrift" class="text-base font-mono font-bold text-zinc-900 mt-1">
+                11.4 meters &bull; PASS
+              </div>
+            </div>
+            <div class="cream-well p-3.5">
+              <div class="text-xs font-mono text-zinc-500">County Tax Assessor Deed Match</div>
+              <div id="stage1MetricDeed" class="text-base font-mono font-bold text-zinc-900 mt-1">
+                98.6% Jaro-Winkler &bull; VANCE TRUST
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Cream Callout Bar (Matching Reference Screenshot Bottom Box) -->
+      <div class="cream-well p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="space-y-1 font-mono">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#216E53]">
+            FASTAPI + ASYNCIO GEODESIC &amp; APN GATE (18 MS EXECUTION &bull; ZERO GPU WASTE ON SPOOFED UPLOADS)
+          </div>
+          <div id="stage1BottomQuote" class="text-xs text-zinc-800">
+            "All 12 uploaded room &amp; exterior photos verified inside Travis County GIS parcel polygon (drift 11.4m &le; 50m tolerance); C2PA Apple HEIC sensor hash intact."
+          </div>
+        </div>
+        <div id="stage1BottomBadge" class="white-subcard px-3.5 py-2 text-xs font-mono font-semibold text-zinc-900 shrink-0 text-center">
+          +11.4m GPS Offset
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         STAGE 02: L1 PRIMARY ZONE CLASSIFICATION & VLM BENCHMARKING
+         ===================================================================== -->
+    <section id="stepSection-2" class="stage-card p-6 sm:p-7 space-y-6">
+      <!-- Editorial Header Row -->
+      <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#EAE6DC]">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#1B367B] text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 mt-0.5">
+            02
+          </div>
+          <div>
+            <div class="text-xs font-mono uppercase tracking-widest text-[#1E3A8A] font-semibold">
+              STAGE 2 &bull; PRIMARY L1 ZONE TAGGING &amp; VLM SELECTION (COSMOS VS QWEN VS NEMOTRON)
+            </div>
+            <h2 class="font-serif text-2xl sm:text-[26px] text-zinc-900 mt-0.5">
+              NVIDIA Cosmos VLM L1 Zone Classifier &amp; Spatial Latent Space
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="px-4 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#EEF2FF] text-[#1E3A8A] border border-[#C7D2FE]">
+            P = 98.0% L1 Accuracy
+          </span>
+        </div>
+      </div>
+
+      <!-- Interactive L1 Room / Zone Selector Strip -->
+      <div class="cream-well p-3 flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-mono text-zinc-600 font-medium px-1">
+          Select Uploaded House Photo Frame (L1 Taxonomy):
+        </span>
+        <div id="l1ZonePillsContainer" class="flex flex-wrap gap-1.5">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Main 2-Column Content Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left 5 Cols: 2D VLM Spatial Feature Embedding Latent Space -->
+        <div class="lg:col-span-5 cream-well p-4 space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-zinc-600 uppercase tracking-wider">COSMOS 2D PATCH LATENT SPACE (GEOMETRY VS TEXTURE)</span>
+            <span id="stage2ActiveZoneTag" class="font-bold text-[#216E53]">&bull; L1: ROOFTOP</span>
+          </div>
+
+          <div class="white-subcard p-3">
+            <svg viewBox="0 0 430 250" class="w-full h-auto select-none">
+              <line x1="48" y1="20" x2="48" y2="212" stroke="#D4D0C8" stroke-width="1.2" />
+              <line x1="48" y1="212" x2="405" y2="212" stroke="#D4D0C8" stroke-width="1.2" />
+
+              <text x="225" y="238" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono">
+                3D Spatial Depth &amp; Perspective Index &rarr;
+              </text>
+              <text x="16" y="118" text-anchor="middle" fill="#71717A" font-size="10" font-family="JetBrains Mono" transform="rotate(-90 16,118)">
+                Surface Specularity &rarr;
+              </text>
+
+              <!-- Cluster C3: Interior Wet Zones (Kitchen / Bathroom) -->
+              <ellipse cx="150" cy="78" rx="68" ry="32" fill="#FEF3C7" fill-opacity="0.75" stroke="#92400E" stroke-width="1.5" stroke-dasharray="4 3" />
+              <text x="150" y="81" text-anchor="middle" fill="#92400E" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C3: Kitchen / Bath
+              </text>
+
+              <!-- Cluster C2: Exterior, Patio & Balcony -->
+              <ellipse cx="310" cy="115" rx="64" ry="30" fill="#EEF2FF" fill-opacity="0.85" stroke="#1E3A8A" stroke-width="1.5" stroke-dasharray="4 3" />
+              <text x="310" y="118" text-anchor="middle" fill="#1E3A8A" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C2: Patio / Balcony
+              </text>
+
+              <!-- Cluster C4: Backlit Glare / Occluded Frame -->
+              <ellipse cx="118" cy="164" rx="56" ry="26" fill="#FFE4E6" fill-opacity="0.75" stroke="#9F1239" stroke-width="1.5" stroke-dasharray="4 3" />
+              <text x="118" y="167" text-anchor="middle" fill="#9F1239" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C4: Solar Glare
+              </text>
+
+              <!-- Cluster C1: Rooftop & Living Interior -->
+              <ellipse cx="268" cy="176" rx="68" ry="28" fill="#ECFDF5" fill-opacity="0.9" stroke="#216E53" stroke-width="1.6" stroke-dasharray="4 3" />
+              <text x="268" y="179" text-anchor="middle" fill="#216E53" font-size="10" font-weight="600" font-family="JetBrains Mono">
+                C1: Roof &amp; Envelope
+              </text>
+
+              <!-- Dynamic Zone Point -->
+              <g id="stage2LatentPoint">
+                <circle cx="268" cy="176" r="11" fill="#216E53" fill-opacity="0.24" />
+                <circle cx="268" cy="176" r="5.5" fill="#216E53" stroke="#FFFFFF" stroke-width="1.5" />
+              </g>
+            </svg>
+          </div>
+
+          <div id="stage2VisualCuesList" class="text-[11px] font-mono text-zinc-700 bg-white px-3 py-2 rounded-lg border border-[#E6E3DA]">
+            <!-- Populated dynamically by JS -->
+          </div>
+        </div>
+
+        <!-- Right 7 Cols: VLM Architecture Comparison Bars (Cosmos vs Qwen vs Nemotron) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 id="stage2Headline" class="font-mono text-sm font-bold text-zinc-900">
+              Selected Leader: NVIDIA Cosmos VLM (98.0% L1 Accuracy via vLLM)
+            </h3>
+            <div class="flex items-center gap-1.5">
+              <button onclick="switchStage2RightView('benchmarks')" id="s2Btn-benchmarks" class="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white">
+                Model Benchmarks
+              </button>
+              <button onclick="switchStage2RightView('vllm')" id="s2Btn-vllm" class="px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]">
+                vLLM FP8 Server Code
+              </button>
+            </div>
+          </div>
+
+          <!-- Model Comparison Bars -->
+          <div id="stage2BenchmarksContainer" class="space-y-3.5">
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-800 font-semibold">1. NVIDIA Cosmos VLM-13B (Selected Production Leader)</span>
+                <span class="font-bold text-zinc-900">98.0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#216E53] rounded-full transition-all duration-500" style="width: 98.0%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-700">2. Qwen2.5-VL-72B-Instruct (Strong OCR, Exceeded 200ms SLA)</span>
+                <span class="font-bold text-zinc-900">95.4%</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#1D4ED8] rounded-full transition-all duration-500" style="width: 95.4%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-700">3. NVIDIA Nemotron-VL-34B (Evaluated Candidate)</span>
+                <span class="font-bold text-zinc-900">94.8%</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#C87A19] rounded-full transition-all duration-500" style="width: 94.8%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-700">4. Unfinetuned Baseline VLM (Pre-Domain Adaptation)</span>
+                <span class="font-bold text-zinc-900">78.0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#9F1239] rounded-full transition-all duration-500" style="width: 78.0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- vLLM Code View -->
+          <div id="stage2VllmContainer" class="hidden cream-well p-3">
+            <pre id="stage2CodePre" class="white-subcard p-3.5 text-xs font-mono text-zinc-800 overflow-x-auto code-scroll max-h-[210px] leading-relaxed"></pre>
+          </div>
+
+          <!-- 2 Metric Boxes -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div class="cream-well p-3.5">
+              <div class="text-xs font-mono text-zinc-500">Active Frame Softmax Confidence</div>
+              <div id="stage2MetricConf" class="text-base font-mono font-bold text-zinc-900 mt-1">
+                0.992 (L1_ROOFTOP)
+              </div>
+            </div>
+            <div class="cream-well p-3.5">
+              <div class="text-xs font-mono text-zinc-500">vLLM PagedAttention Latency (AWS A10G)</div>
+              <div id="stage2MetricLatency" class="text-base font-mono font-bold text-zinc-900 mt-1">
+                64 ms / batch (70% Faster vs Sync)
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Cream Callout Bar -->
+      <div class="cream-well p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="space-y-1 font-mono">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#216E53]">
+            VLLM + ASYNCIO INFERENCE ENGINE (64 MS L1 PASS &bull; SAVED 18 MINS VS MANUAL SORTING)
+          </div>
+          <div id="stage2BottomNote" class="text-xs text-zinc-800">
+            "Cosmos physical-world spatial tokenizer preserves 3D roof pitch and room geometry under wide-angle smartphone distortion."
+          </div>
+        </div>
+        <div id="stage2BottomPill" class="white-subcard px-3.5 py-2 text-xs font-mono font-semibold text-zinc-900 shrink-0 text-center">
+          +19.5% vs Baseline
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         STAGE 03: AUTONOMOUS WEB CRAWL AGENTS & PROPERTY RAG WORKFLOW
+         ===================================================================== -->
+    <section id="stepSection-3" class="stage-card p-6 sm:p-7 space-y-6">
+      <!-- Editorial Header Row -->
+      <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#EAE6DC]">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#1B367B] text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 mt-0.5">
+            03
+          </div>
+          <div>
+            <div class="text-xs font-mono uppercase tracking-widest text-[#1E3A8A] font-semibold">
+              STAGE 3 &bull; AUTONOMOUS WEB CRAWL AGENTS &amp; PROPERTY RAG (REDFIN / FLUTTER HOMES / ZILLOW)
+            </div>
+            <h2 class="font-serif text-2xl sm:text-[26px] text-zinc-900 mt-0.5">
+              Multi-Portal Web Extraction for Visually Occluded Property Attributes
+            </h2>
+          </div>
+        </div>
+
+        <span class="px-4 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+          -85% Manual Underwriter Lookup Time
+        </span>
+      </div>
+
+      <!-- Main 2-Column Content Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left 6 Cols: Interactive Scraped Property Portal Viewer -->
+        <div class="lg:col-span-6 cream-well p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs font-mono text-zinc-600 uppercase tracking-wider">
+              PLAYWRIGHT DOM &amp; PERMIT EXTRACTOR (CLICK SPANS)
+            </span>
+            <div class="flex flex-wrap gap-1">
+              <button onclick="selectWebPortal(0)" id="portalBtn-0" class="px-2.5 py-1 rounded text-xs font-mono transition">
+                Redfin MLS
+              </button>
+              <button onclick="selectWebPortal(1)" id="portalBtn-1" class="px-2.5 py-1 rounded text-xs font-mono transition">
+                Flutter / Zillow
+              </button>
+              <button onclick="selectWebPortal(2)" id="portalBtn-2" class="px-2.5 py-1 rounded text-xs font-mono transition">
+                County Permits
+              </button>
+            </div>
+          </div>
+
+          <!-- Crisp White Document Viewer -->
+          <div id="webPortalCardContent" class="white-subcard p-4 font-mono text-xs leading-7 text-zinc-800 space-y-3">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <!-- Active Span Inspector Strip -->
+          <div class="white-subcard p-3 flex items-center justify-between gap-3 border-l-4 border-l-[#1B367B]">
+            <div class="text-xs font-mono">
+              <div class="text-[10px] uppercase text-zinc-500">Injected into Cosmos L2 Context Window:</div>
+              <div id="webSpanInspectorText" class="font-semibold text-zinc-900 mt-0.5">
+                Span: "Permitted Insulated Alumawood Patio Cover (420 sq ft)" &rarr; PatioCover = True
+              </div>
+            </div>
+            <span id="webSpanWeightBadge" class="px-2.5 py-1 rounded bg-[#EEF2FF] text-[#1E3A8A] font-mono text-xs font-bold shrink-0">
+              RAG Weight: 0.97
+            </span>
+          </div>
+        </div>
+
+        <!-- Right 6 Cols: Occlusion Resolution Bars + Agent Code / YAML Tabs -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-mono text-sm font-bold text-zinc-900">
+              Visual Ambiguity Resolution via Web Agent RAG
+            </h3>
+            <div class="flex items-center gap-1.5">
+              <button onclick="switchStage3Tab('triples')" id="s3Tab-triples" class="px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white">
+                Extracted Triples
+              </button>
+              <button onclick="switchStage3Tab('code')" id="s3Tab-code" class="px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]">
+                Playwright Agent
+              </button>
+              <button onclick="switchStage3Tab('yaml')" id="s3Tab-yaml" class="px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]">
+                RAG YAML
+              </button>
+            </div>
+          </div>
+
+          <div id="stage3RightPanel" class="cream-well p-4 max-h-[320px] overflow-y-auto code-scroll">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="cream-well p-3.5">
+              <div class="text-xs font-mono text-zinc-500">Occluded Window / Patio Accuracy Lift</div>
+              <div class="text-base font-mono font-bold text-[#216E53] mt-1">
+                66.2% (Pixels) &rarr; 96.4% (+RAG)
+              </div>
+            </div>
+            <div class="cream-well p-3.5">
+              <div class="text-xs font-mono text-zinc-500">Pinecone Vector + Permit Cache Latency</div>
+              <div class="text-base font-mono font-bold text-zinc-900 mt-1">
+                48 ms Warm / 380 ms Live Crawl
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Cream Callout Bar -->
+      <div class="cream-well p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="space-y-1 font-mono">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-[#216E53]">
+            LANGGRAPH + PLAYWRIGHT WEB CRAWLER (48 MS CACHED RAG &bull; SLASHED MANUAL LOOKUP TIME BY 85%)
+          </div>
+          <div class="text-xs text-zinc-800">
+            "When exterior photos are backlit or unclear, autonomous agents scrape Redfin, Flutter Homes, Zillow &amp; municipal permits by address to anchor Cosmos L2 tagging."
+          </div>
+        </div>
+        <div class="white-subcard px-3.5 py-2 text-xs font-mono font-semibold text-zinc-900 shrink-0 text-center">
+          +30.2% Occluded Recall
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         STAGE 04: FINE-TUNED COSMOS L2 GRANULAR EXTRACTION & MULTI-MODAL FUSION
+         ===================================================================== -->
+    <section id="stepSection-4" class="stage-card p-6 sm:p-7 space-y-6">
+      <!-- Editorial Header Row -->
+      <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#EAE6DC]">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#1B367B] text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 mt-0.5">
+            04
+          </div>
+          <div>
+            <div class="text-xs font-mono uppercase tracking-widest text-[#1E3A8A] font-semibold">
+              STAGE 4 &bull; QLORA FINE-TUNED COSMOS VLM &amp; MULTI-MODAL L2 ATTRIBUTE FUSION
+            </div>
+            <h2 class="font-serif text-2xl sm:text-[26px] text-zinc-900 mt-0.5">
+              L2 Granular Structural Tagging (Floor, Roof, Construction, Patio Cover, Windows)
+            </h2>
+          </div>
+        </div>
+
+        <span class="px-4 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+          78.0% Baseline &rarr; 91.5%+ L2 Prod Acc
+        </span>
+      </div>
+
+      <!-- Quick Node Selector Strip -->
+      <div class="cream-well p-3 flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xs font-mono text-zinc-600 font-medium px-1">
+          Click Any Node in the Multi-Modal L2 Fusion Graph Below to Inspect:
+        </span>
+        <div id="l2QuickPills" class="flex flex-wrap gap-1.5">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+
+      <!-- Main 2-Column Content Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left 7 Cols: Interactive SVG Multi-Modal Fusion Graph on Crisp White Canvas -->
+        <div class="lg:col-span-7 cream-well p-4 space-y-3">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-zinc-600 uppercase tracking-wider">COSMOS-13B-L2-QLORA (VISION PATCHES + WEB RAG FUSION)</span>
+            <span class="font-bold text-[#1B367B]">&bull; RANK r=64 / ALPHA=128</span>
+          </div>
+
+          <div class="white-subcard p-2">
+            <svg id="l2FusionGraphSvg" viewBox="0 0 760 430" class="w-full h-auto select-none">
+              <defs>
+                <marker id="arrow-editorial-default" viewBox="0 0 10 10" refX="25" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#A1A1AA" />
+                </marker>
+                <marker id="arrow-editorial-active" viewBox="0 0 10 10" refX="25" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#1B367B" />
+                </marker>
+              </defs>
+              <g id="l2SvgEdgesGroup"></g>
+              <g id="l2SvgNodesGroup"></g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: L2 Node Property & Fine-Tuning Inspector -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-[10px] font-mono uppercase tracking-wider text-[#1E3A8A] font-semibold">
+                ACTIVE L2 ATTRIBUTE HEAD INSPECTOR
+              </div>
+              <h3 id="l2InspectorTitle" class="font-mono text-base font-bold text-zinc-900">
+                :RoofMaterial (Class-4 Shingle)
+              </h3>
+            </div>
+            <span id="l2InspectorConfBadge" class="px-3 py-1 rounded-full text-xs font-mono font-semibold bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+              Conf: 0.97
+            </span>
+          </div>
+
+          <div id="l2InspectorCardBody" class="cream-well p-4 space-y-3 text-xs">
+            <!-- Populated dynamically by JS -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- =====================================================================
+         STAGE 05: AUTONOMOUS QUOTE ENGINE (<200MS) & CONTINUOUS RAGAS GOVERNANCE
+         ===================================================================== -->
+    <section id="stepSection-5" class="stage-card p-6 sm:p-7 space-y-6">
+      <!-- Editorial Header Row -->
+      <div class="flex flex-wrap items-start justify-between gap-4 pb-4 border-b border-[#EAE6DC]">
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-[#1B367B] text-white font-mono font-bold text-sm flex items-center justify-center shrink-0 mt-0.5">
+            05
+          </div>
+          <div>
+            <div class="text-xs font-mono uppercase tracking-widest text-[#1E3A8A] font-semibold">
+              STAGE 5 &bull; SUB-200MS ACTUARIAL QUOTE ENGINE &amp; CONTINUOUS RAGAS GOVERNANCE
+            </div>
+            <h2 class="font-serif text-2xl sm:text-[26px] text-zinc-900 mt-0.5">
+              Autonomous Replacement Cost Valuation &amp; Production Quality Controls
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="px-4 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#EEF2FF] text-[#1E3A8A] border border-[#C7D2FE]">
+            0.92 RAGAS Faithfulness
+          </span>
+          <span class="px-4 py-1.5 rounded-full text-xs font-mono font-semibold bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0]">
+            184 ms Total Quote Latency
+          </span>
+        </div>
+      </div>
+
+      <!-- Interactive Property Case Selector Bar -->
+      <div class="cream-well p-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs font-mono font-semibold text-zinc-700 uppercase">
+            Select Complete Property Underwriting Case:
+          </span>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="loadQuoteScenario(0)" id="quoteBtn-0" class="px-3 py-1 rounded-lg text-xs font-mono transition">
+              1. Miami FL Coastal Villa (Impact Windows + Alumawood Patio)
+            </button>
+            <button onclick="loadQuoteScenario(1)" id="quoteBtn-1" class="px-3 py-1 rounded-lg text-xs font-mono transition">
+              2. Austin TX Custom Residence (Class-4 Shingles + Cedar Pergola)
+            </button>
+            <button onclick="loadQuoteScenario(2)" id="quoteBtn-2" class="px-3 py-1 rounded-lg text-xs font-mono transition">
+              3. Denver CO Risk Referral (Aged Wood Shake + Unpermitted Deck)
+            </button>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-2.5">
+          <input id="quoteScenarioInput" type="text"
+            class="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-[#D5CFC2] text-xs font-mono text-zinc-900 focus:outline-none focus:border-[#1B367B]"
+            value="" />
+          <button onclick="executeUnderwritingQuotePipeline()" class="px-5 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider bg-[#1B367B] hover:bg-[#13265C] text-white transition shrink-0">
+            Synthesize Underwriting Quote &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Main 2-Column Content Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left 7 Cols: Line-Item L1/L2 Actuarial Quote Breakdown Table -->
+        <div class="lg:col-span-7 cream-well p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-zinc-600 font-semibold">
+              L1 + L2 UNDERWRITING RATE MODIFIER SCHEDULE
+            </span>
+            <div class="flex items-center gap-2 font-mono text-xs">
+              <span id="finalQuoteDecisionBadge" class="px-2.5 py-0.5 rounded bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] font-bold">
+                AUTO-BIND APPROVED
+              </span>
+              <span id="finalAnnualPremiumBadge" class="px-2.5 py-0.5 rounded bg-white border border-[#D5CFC2] text-zinc-900 font-bold">
+                $2,840 / yr
+              </span>
+            </div>
+          </div>
+
+          <div class="white-subcard overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-[#E6E3DA] bg-[#F6F4EE] text-[10px] text-zinc-500 uppercase">
+                  <th class="py-2.5 px-3">L1 Zone</th>
+                  <th class="py-2.5 px-3">L2 Granular Tag</th>
+                  <th class="py-2.5 px-3">Evidence Source</th>
+                  <th class="py-2.5 px-3">Premium Impact</th>
+                  <th class="py-2.5 px-3">Conf</th>
+                </tr>
+              </thead>
+              <tbody id="quoteResultTbody" class="divide-y divide-[#EAE6DC] text-zinc-800">
+                <!-- Populated dynamically by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <pre id="codeStep5ActuarialMath" class="white-subcard p-3.5 text-xs font-mono text-zinc-800 overflow-x-auto leading-relaxed"></pre>
+        </div>
+
+        <!-- Right 5 Cols: Continuous RAGAS + TruLens Statistical Quality Controls -->
+        <div class="lg:col-span-5 space-y-4">
+          <h3 class="font-mono text-sm font-bold text-zinc-900">
+            Continuous RAGAS &amp; TruLens Governance Telemetry
+          </h3>
+
+          <div class="space-y-3.5">
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-700">RAGAS Faithfulness (Factual Grounding in Web + Permit RAG)</span>
+                <span class="font-bold text-zinc-900">0.92 (92%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#216E53] rounded-full" style="width: 92%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-700">RAGAS Context Precision (Signal-to-Noise of Scraped Chunks)</span>
+                <span class="font-bold text-zinc-900">0.89 (89%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#1D4ED8] rounded-full" style="width: 89%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-700">Cosmos L1 Primary Zone Classification Accuracy</span>
+                <span class="font-bold text-zinc-900">0.98 (98%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#216E53] rounded-full" style="width: 98%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-mono mb-1">
+                <span class="text-zinc-700">Fine-Tuned Cosmos L2 Granular Attribute Accuracy (Prod)</span>
+                <span class="font-bold text-zinc-900">0.915 (91.5%)</span>
+              </div>
+              <div class="progress-track">
+                <div class="h-full bg-[#C87A19] rounded-full" style="width: 91.5%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cream-well p-3.5">
+            <div class="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5">
+              SUB-200MS END-TO-END LATENCY BUDGET BREAKDOWN
+            </div>
+            <pre id="codeStep5Ragas" class="white-subcard p-3 text-xs font-mono text-zinc-800 overflow-x-auto leading-relaxed"></pre>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =====================================================================
+       STICKY BOTTOM TELEMETRY BAR (MATCHING REFERENCE SCREENSHOT)
+       ===================================================================== -->
+  <footer class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E4E0D6] py-2.5 px-4 sm:px-6 shadow-sm">
+    <div class="max-w-[1380px] mx-auto flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-zinc-700">
+      <div class="truncate">
+        Pipeline Orchestration: <strong class="text-zinc-900">LangGraph Multi-Agent StateGraph + vLLM Cosmos VLM</strong> &bull;
+        End-to-End Quote Latency: <strong class="text-[#216E53]">184 ms (L1+L2+RAG Path)</strong> / <strong class="text-[#1B367B]">98.0% L1 &amp; 91.5% L2 Prod Accuracy</strong>
+      </div>
+      <div class="flex items-center gap-3 shrink-0">
+        <span class="text-zinc-500">RAGAS Faithfulness: <strong class="text-zinc-900">0.92</strong></span>
+        <span class="text-zinc-500">Context Precision: <strong class="text-zinc-900">0.89</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       INTERVIEW TALKING POINTS MODAL
+       ===================================================================== -->
+  <div id="cheatSheetModal" class="fixed inset-0 z-50 hidden bg-zinc-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="stage-card max-w-3xl w-full overflow-hidden shadow-2xl">
+      <div class="p-4 bg-[#F6F4EE] border-b border-[#E4E0D6] flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider text-[#1E3A8A] font-semibold">
+            INTERVIEW PITCH GUIDE &bull; NEXUS OMNIRISK AI ARCHITECTURE
+          </span>
+          <h3 class="font-serif text-xl text-zinc-900">How to Walk the Interviewer Through OmniRisk AI</h3>
+        </div>
+        <button onclick="closeCheatSheetModal()" class="px-3 py-1 rounded-lg bg-white hover:bg-[#EAE6DC] text-zinc-800 border border-[#D5CFC2] text-xs font-mono">
+          ESC / Close
+        </button>
+      </div>
+      <div class="p-5 space-y-3 text-xs text-zinc-700 leading-relaxed max-h-[75vh] overflow-y-auto">
+        <div class="cream-well p-3.5">
+          <div class="font-mono font-bold text-[#1B367B] mb-1">1. Legacy Bottleneck vs. Autonomous OmniRisk AI</div>
+          <p>"When a homeowner requests a property insurance valuation, they upload 10–15 photos covering every interior room and exterior elevation. Previously, human underwriters manually tagged photos across two tiers: <strong>L1 primary zones</strong> (rooftop, bathroom, balcony, interior, exterior) and <strong>L2 granular details</strong> (floor material, roof shingle class, construction framing, patio cover presence, window glazing). We replaced this 20-minute manual bottleneck with an autonomous Cosmos VLM + Web Agent RAG pipeline that generates quotes in <strong>under 200ms</strong>."</p>
+        </div>
+        <div class="cream-well p-3.5">
+          <div class="font-mono font-bold text-[#216E53] mb-1">2. Geodesic EXIF GPS &amp; Ownership Fraud Gate (Stage 1)</div>
+          <p>"To guarantee the uploaded photos actually belong to the insured house, our FastAPI + AsyncIO ingestion gate extracts camera EXIF GPS coordinates, computes the <strong>Haversine geodesic distance</strong> against the County GIS parcel centroid (&le;50m tolerance), checks C2PA/SHA-256 hashes against Photoshop manipulation, and fuzzy-matches the applicant's name against the County Tax Assessor APN warranty deed."</p>
+        </div>
+        <div class="cream-well p-3.5">
+          <div class="font-mono font-bold text-[#1B367B] mb-1">3. Why NVIDIA Cosmos Beat Qwen &amp; Nemotron + QLoRA Fine-Tuning (Stages 2 &amp; 4)</div>
+          <p>"We benchmarked <strong>Qwen2.5-VL</strong>, <strong>NVIDIA Nemotron-VL</strong>, and <strong>NVIDIA Cosmos</strong>. Cosmos led with <strong>98.0% L1 accuracy</strong> and superior 3D spatial grounding. For granular L2 property attributes, we fine-tuned Cosmos using QLoRA (Rank r=64) on our proprietary dataset of labeled underwriting images, lifting unstructured classification accuracy from a 78% baseline to 91.5%+ in production."</p>
+        </div>
+        <div class="cream-well p-3.5">
+          <div class="font-mono font-bold text-[#C87A19] mb-1">4. Autonomous Web Crawl Agents for Unclear Images &amp; RAGAS Governance (Stages 3 &amp; 5)</div>
+          <p>"Customer photos are often backlit or occluded—you cannot reliably tell from pixels alone if glass is dual-pane hurricane impact or if a shaded backyard has a permitted patio cover. Our <strong>LangGraph + Playwright web agents</strong> take the property address, crawl <strong>Redfin, Flutter Homes, Zillow, and County Building Permits</strong>, and inject those extracted facts into Cosmos via RAG—slashing manual underwriter lookup time by <strong>85%</strong> while sustaining <strong>0.92 Faithfulness</strong> and <strong>0.89 Context Precision</strong> in RAGAS."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       APPLICATION DATA & INTERACTIVE CONTROLLERS
+       ===================================================================== -->
+  <script>
+    let activeStage = 1;
+    let viewAllStacked = true; // Default shows all stages stacked in clean editorial scroll like screenshot
+    let autoDemoInterval = null;
+
+    let selectedSubmissionIdx = 0;
+    let stage1RightView = 'bars';
+
+    let selectedL1ZoneIdx = 0;
+    let stage2RightView = 'benchmarks';
+
+    let selectedPortalIdx = 0;
+    let stage3RightTab = 'triples';
+
+    let selectedL2NodeId = 'RoofMaterial';
+    let selectedQuoteIdx = 0;
+
+    // -----------------------------------------------------------------------
+    // STAGE 1 DATA: EXIF GPS & APN DEED SUBMISSIONS
+    // -----------------------------------------------------------------------
+    const submissionsData = [
+      {
+        id: 'PROP-TX-44910',
+        address: '742 Evergreen Terrace, Austin, TX 78704',
+        topPill: 'P = 99.2% Authentic',
+        topPillClass: 'bg-[#EEF2FF] text-[#1E3A8A] border-[#C7D2FE]',
+        plotTag: '• VERIFIED #1 (C1)',
+        plotTagColor: '#216E53',
+        markerX: 115,
+        markerY: 62,
+        markerColor: '#216E53',
+        cameraMeta: 'Device: Apple iPhone 16 Pro (12 Photos)',
+        apnMeta: 'APN-04-9921-0084-TX',
+        headline: 'Gate Verdict: Verified Parcel & Warranty Deed Owner Match',
+        driftMetric: '11.4 meters • PASS (<=50m)',
+        deedMetric: '98.6% Jaro-Winkler • VANCE TRUST',
+        bottomQuote: '"All 12 uploaded room & exterior photos verified inside Travis County GIS parcel polygon (drift 11.4m <= 50m tolerance); C2PA Apple HEIC sensor hash intact."',
+        bottomBadge: '+11.4m GPS Offset',
+        bars: [
+          { label: 'G1: Geodesic EXIF GPS Haversine Proximity (11.4m vs 50m max)', pct: 96, color: '#216E53' },
+          { label: 'G2: County Tax Assessor APN & Warranty Deed Title Match', pct: 99, color: '#1D4ED8' },
+          { label: 'G3: C2PA Cryptographic Hash & Zero Photoshop Tampering', pct: 100, color: '#216E53' },
+          { label: 'G4: Spoof / Reverse-MLS Stock Image Fraud Probability', pct: 1, color: '#9F1239' }
+        ],
+        codeSnippet: `# FastAPI + AsyncIO Geodesic Haversine & APN Deed Verification Gate
+# Submission: PROP-TX-44910 | 742 Evergreen Terrace, Austin, TX 78704
+{
+  "submission_id": "PROP-TX-44910",
+  "exif_gps": { "lat": 30.251842, "lon": -97.752410 },
+  "parcel_centroid": { "lat": 30.251915, "lon": -97.752328 },
+  "haversine_drift_meters": 11.4,
+  "max_allowed_radius_meters": 50.0,
+  "deed_owner_match": {
+    "applicant": "Marcus & Elena Vance",
+    "assessor_deed": "VANCE MARCUS R & ELENA S LIVING TRUST",
+    "similarity": 0.986
+  },
+  "gate_decision": "VERIFIED_PASS_TO_COSMOS_L1"
+}`
+      },
+      {
+        id: 'PROP-FL-88204',
+        address: '1920 Oceanfront Blvd, Miami, FL 33139',
+        topPill: 'P = 97.8% Authentic + RAG',
+        topPillClass: 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]',
+        plotTag: '• LLC DEED #2 (C2)',
+        plotTagColor: '#1E3A8A',
+        markerX: 148,
+        markerY: 142,
+        markerColor: '#1E3A8A',
+        cameraMeta: 'Device: Samsung Galaxy S25 Ultra (14 Photos)',
+        apnMeta: 'APN-02-3234-019-0420',
+        headline: 'Gate Verdict: Verified Corporate LLC Deed + Solar Glare Flagged for Web RAG',
+        driftMetric: '8.2 meters • PASS (<=50m)',
+        deedMetric: '99.1% Match • COASTAL HORIZON LLC',
+        bottomQuote: '"GPS verified within 8.2m of Miami-Dade parcel centroid; Photo #4 exhibits backlit coastal glare on patio cover & windows -> Stage 3 Web Crawler triggered."',
+        bottomBadge: '+8.2m GPS Offset',
+        bars: [
+          { label: 'G1: Geodesic EXIF GPS Haversine Proximity (8.2m vs 50m max)', pct: 98, color: '#216E53' },
+          { label: 'G2: Corporate LLC Sunbiz & Miami-Dade APN Title Match', pct: 99, color: '#1D4ED8' },
+          { label: 'G3: Exterior Frame Glare / Occlusion Index (Triggers Stage 3 RAG)', pct: 42, color: '#C87A19' },
+          { label: 'G4: Spoof / Reverse-MLS Stock Image Fraud Probability', pct: 2, color: '#9F1239' }
+        ],
+        codeSnippet: `# FastAPI + AsyncIO Geodesic Haversine & APN Deed Verification Gate
+# Submission: PROP-FL-88204 | 1920 Oceanfront Blvd, Miami, FL 33139
+{
+  "submission_id": "PROP-FL-88204",
+  "haversine_drift_meters": 8.2,
+  "deed_owner_match": "COASTAL HORIZON HOLDINGS LLC (0.991)",
+  "occlusion_audit": "Photo #4 & #12 high specular glare -> Dispatch Playwright Web Agent",
+  "gate_decision": "VERIFIED_PASS_WITH_WEB_RAG_ENRICHMENT"
+}`
+      },
+      {
+        id: 'PROP-CA-31092',
+        address: '405 Canyon Crest Rd, Los Angeles, CA 90049',
+        topPill: 'FRAUD BLOCKED (4.8km Drift)',
+        topPillClass: 'bg-rose-100 text-[#9F1239] border-rose-300',
+        plotTag: '• SPOOF REJECTED (C4)',
+        plotTagColor: '#9F1239',
+        markerX: 332,
+        markerY: 168,
+        markerColor: '#9F1239',
+        cameraMeta: 'Header: Adobe Photoshop 26.2 (EXIF Stripped)',
+        apnMeta: 'APN-4402-018-029 (Mismatch)',
+        headline: 'Gate Verdict: CRITICAL FRAUD BLOCK — GPS 4.82 km Away & Deed Mismatch',
+        driftMetric: '4,820.5 meters • FAIL (>50m)',
+        deedMetric: '21.4% Mismatch • WESTSIDE EQUITY LP',
+        bottomQuote: '"ALERT: Uploaded rooftop & kitchen photos were captured 4.82 km away in Beverly Hills and contain Adobe Photoshop 26.2 headers. Halted VLM inference."',
+        bottomBadge: '4,820m Drift (Blocked)',
+        bars: [
+          { label: 'G1: Geodesic EXIF GPS Proximity Score (4,820.5m Drift -> FAIL)', pct: 4, color: '#9F1239' },
+          { label: 'G2: County Tax Assessor APN Deed Similarity (21.4% Mismatch)', pct: 21, color: '#9F1239' },
+          { label: 'G3: Adobe Photoshop Software Manipulation Signature', pct: 94, color: '#C87A19' },
+          { label: 'G4: Spoof / Reverse-MLS Stock Image Fraud Probability', pct: 98, color: '#9F1239' }
+        ],
+        codeSnippet: `# FastAPI + AsyncIO Geodesic Haversine & APN Deed Verification Gate
+# Submission: PROP-CA-31092 | 405 Canyon Crest Rd, Los Angeles, CA 90049
+HTTPException(
+  status_code=422,
+  detail={
+    "error": "GEODESIC_AND_DEED_FRAUD_GATE_REJECT",
+    "measured_haversine_drift_m": 4820.5,
+    "detected_software_header": "Adobe Photoshop 26.2 (Macintosh)",
+    "action": "HALT_GPU_INFERENCE_AND_ROUTE_TO_SIU"
+  }
+)`
+      }
+    ];
+
+    // -----------------------------------------------------------------------
+    // STAGE 2 DATA: L1 PRIMARY ZONES & COSMOS VLM LATENT CLUSTERS
+    // -----------------------------------------------------------------------
+    const l1ZonesData = [
+      {
+        id: 'L1_ROOFTOP',
+        label: '1. Rooftop',
+        tagText: '• L1: ROOFTOP (C1)',
+        cx: 268,
+        cy: 176,
+        color: '#216E53',
+        conf: '0.992 (L1_ROOFTOP)',
+        cues: 'Detected Patch Cues: Dimensional shingle tabs, galvanized ridge vent, hip roof pitch, chimney flashing.',
+        note: '"Cosmos 3D spatial tokens classify oblique drone & ladder roof angles at 99.2% confidence."'
+      },
+      {
+        id: 'L1_PATIO_EXTERIOR',
+        label: '2. Patio / Exterior',
+        tagText: '• L1: PATIO & EXT (C2/C4)',
+        cx: 118,
+        cy: 164,
+        color: '#9F1239',
+        conf: '0.984 (GLARE -> WEB RAG)',
+        cues: 'Detected Patch Cues: Rear stucco elevation, overhead patio cover fascia (backlit solar glare > 0.45 -> triggers Stage 3 Web Agent).',
+        note: '"Backlit glare detected on patio cover & sliding glass -> Cosmos automatically dispatches Stage 3 Redfin/Permit Web Agent."'
+      },
+      {
+        id: 'L1_KITCHEN',
+        label: '3. Kitchen',
+        tagText: '• L1: KITCHEN (C3)',
+        cx: 142,
+        cy: 74,
+        color: '#92400E',
+        conf: '0.995 (L1_KITCHEN)',
+        cues: 'Detected Patch Cues: Stone waterfall island, stainless range hood, rectified porcelain plank flooring, recessed lighting.',
+        note: '"High-clarity indoor frame: Cosmos extracts both L1 Kitchen zone (0.995) and L2 Porcelain Plank flooring."'
+      },
+      {
+        id: 'L1_BATHROOM',
+        label: '4. Bathroom',
+        tagText: '• L1: BATHROOM (C3)',
+        cx: 168,
+        cy: 84,
+        color: '#92400E',
+        conf: '0.989 (L1_BATHROOM)',
+        cues: 'Detected Patch Cues: Frameless tempered glass shower enclosure, dual quartz vanity, wet-zone ceramic tile floor.',
+        note: '"Cosmos spatial attention filters out mirror reflections to isolate wet-wall and floor tile materials."'
+      },
+      {
+        id: 'L1_BALCONY',
+        label: '5. Balcony',
+        tagText: '• L1: BALCONY (C2)',
+        cx: 310,
+        cy: 115,
+        color: '#1E3A8A',
+        conf: '0.978 (L1_BALCONY)',
+        cues: 'Detected Patch Cues: Cantilevered deck slab, aluminum & tempered glass safety railing, elastomeric waterproof membrane.',
+        note: '"Distinguishes elevated cantilevered Balcony from ground-level Patio with 97.8% precision."'
+      },
+      {
+        id: 'L1_INTERIOR',
+        label: '6. Living Interior',
+        tagText: '• L1: INTERIOR (C1)',
+        cx: 248,
+        cy: 172,
+        color: '#216E53',
+        conf: '0.991 (L1_INTERIOR)',
+        cues: 'Detected Patch Cues: High-ceiling great room, dual-pane exterior window wall, continuous porcelain plank floor.',
+        note: '"Extracts interior fenestration openings and cross-links window glazing specs with Stage 3 Permit RAG."'
+      }
+    ];
+
+    const stage2VllmCode = `# Stage 2: High-Throughput NVIDIA Cosmos VLM L1 Classifier on AWS (vLLM + FP8)
+from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
+
+engine = AsyncLLMEngine.from_engine_args(AsyncEngineArgs(
+    model="nvidia/Cosmos-VLM-13B-Property-Instruct",
+    quantization="fp8",
+    enable_prefix_caching=True,
+    gpu_memory_utilization=0.92
+))
+
+# Evaluates 12-14 property photos concurrently in 64ms via AsyncIO gather
+# If visual_glare_entropy > 0.25 -> triggers Stage 3 LangGraph Web Crawler`;
+
+    // -----------------------------------------------------------------------
+    // STAGE 3 DATA: AUTONOMOUS WEB AGENTS (REDFIN / FLUTTER / ZILLOW / PERMITS)
+    // -----------------------------------------------------------------------
+    const webPortalsData = [
+      {
+        name: 'Redfin MLS Listing',
+        header: 'REDFIN MLS #A11649208 • 1920 OCEANFRONT BLVD, MIAMI, FL 33139',
+        html: `
+          <div class="text-[11px] text-zinc-500 border-b border-[#EAE6DC] pb-1.5 flex justify-between">
+            <span>REDFIN BROKER REMARKS &amp; STRUCTURAL TABLE</span>
+            <span class="text-[#216E53] font-semibold">CRAWLED IN 310ms</span>
+          </div>
+          <p class="mt-2">
+            <strong>EXTERIOR &amp; PATIO STRUCTURE:</strong> Residence built with
+            <span onclick="inspectWebSpan('Reinforced CBS (Concrete Block & Stucco) Framing', 'L2: ConstructionMaterial = CBS_Masonry', '0.98')" class="entity-highlight px-1.5 py-0.5 rounded bg-rose-100 text-[#9F1239] border border-rose-300 font-semibold">Reinforced CBS (Concrete Block &amp; Stucco) Framing</span>.
+            Rear courtyard features a
+            <span onclick="inspectWebSpan('Permitted Insulated Alumawood Patio Cover (420 sq ft)', 'L2: PatioCover = Present (Alumawood)', '0.97')" class="entity-highlight px-1.5 py-0.5 rounded bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] font-semibold">Permitted Insulated Alumawood Patio Cover (420 sq ft)</span>.
+          </p>
+          <p class="mt-2">
+            <strong>WINDOWS &amp; INTERIOR FLOORING:</strong> Outfitted with
+            <span onclick="inspectWebSpan('PGT WinGuard Dual-Pane Low-E Hurricane Impact Windows', 'L2: WindowType = DualPane_Impact_LowE', '0.99')" class="entity-highlight px-1.5 py-0.5 rounded bg-amber-100 text-[#92400E] border border-amber-300 font-semibold">PGT WinGuard Dual-Pane Low-E Hurricane Impact Windows</span>
+            and
+            <span onclick="inspectWebSpan('Rectified Italian Porcelain Plank Tile (24x48)', 'L2: FloorMaterial = Porcelain_Plank_Tile', '0.96')" class="entity-highlight px-1.5 py-0.5 rounded bg-[#EEF2FF] text-[#1E3A8A] border border-[#C7D2FE] font-semibold">Rectified Italian Porcelain Plank Tile (24x48)</span>.
+          </p>
+        `,
+        triples: [
+          { attr: 'L2: PatioCover', val: 'Permitted Insulated Alumawood Patio Cover (420 sq ft)', why: 'Resolves backlit exterior glare in Photo #4', conf: '97%' },
+          { attr: 'L2: WindowType', val: 'PGT WinGuard Dual-Pane Low-E Hurricane Impact Glass', why: 'Resolves transparent glass spec invisible to camera', conf: '99%' },
+          { attr: 'L2: FloorMaterial', val: 'Rectified Italian Porcelain Plank Tile (Water-Resistant)', why: 'Prevents false hardwood water-damage surcharge', conf: '96%' }
+        ]
+      },
+      {
+        name: 'Flutter Homes / Zillow',
+        header: 'FLUTTER HOMES & ZILLOW FACT SHEET • ZPID #44019284',
+        html: `
+          <div class="text-[11px] text-zinc-500 border-b border-[#EAE6DC] pb-1.5 flex justify-between">
+            <span>FLUTTER HOMES &amp; ZILLOW JSON-LD EXTRACT</span>
+            <span class="text-[#216E53] font-semibold">CRAWLED IN 280ms</span>
+          </div>
+          <p class="mt-2">
+            <strong>ROOFING ENVELOPE:</strong> Complete tear-off and re-roof in 2023 utilizing
+            <span onclick="inspectWebSpan('GAF Timberline HDZ Class-4 Impact Architectural Shingles', 'L2: RoofMaterial = Arch_Shingle_Class4', '0.99')" class="entity-highlight px-1.5 py-0.5 rounded bg-[#EEF2FF] text-[#1E3A8A] border border-[#C7D2FE] font-semibold">GAF Timberline HDZ Class-4 Impact Architectural Shingles</span>
+            with sealed secondary water barrier.
+          </p>
+          <p class="mt-2">
+            <strong>OUTDOOR STRUCTURES:</strong> Verified
+            <span onclick="inspectWebSpan('Attached Covered Lanai & Hurricane-Rated Patio Cover', 'L2: PatioCover = Attached_Lanai_Cover', '0.97')" class="entity-highlight px-1.5 py-0.5 rounded bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] font-semibold">Attached Covered Lanai &amp; Hurricane-Rated Patio Cover</span>.
+          </p>
+        `,
+        triples: [
+          { attr: 'L2: RoofMaterial', val: 'GAF Timberline HDZ UL-2218 Class-4 Architectural Shingles', why: 'Confirms impact grade for -12% wind/hail discount', conf: '99%' },
+          { attr: 'L2: PatioCover', val: 'Attached Covered Lanai / Aluminum Pergola', why: 'Cross-confirms Redfin patio cover record', conf: '97%' }
+        ]
+      },
+      {
+        name: 'County Permits',
+        header: 'MIAMI-DADE BUILDING PERMIT ARCHIVE • APN 02-3234-019-0420',
+        html: `
+          <div class="text-[11px] text-zinc-500 border-b border-[#EAE6DC] pb-1.5 flex justify-between">
+            <span>MUNICIPAL BUILDING DEPARTMENT FINALIZED PERMITS</span>
+            <span class="text-[#216E53] font-semibold">VERIFIED GOV RECORD</span>
+          </div>
+          <p class="mt-2">
+            <strong>PERMIT #2023-088410 (FINALIZED):</strong> Re-roof with
+            <span onclick="inspectWebSpan('Class-4 High-Wind Architectural Shingles (130 MPH Rated)', 'L2: RoofMaterial = Permitted_Class4_2023', '0.99')" class="entity-highlight px-1.5 py-0.5 rounded bg-[#EEF2FF] text-[#1E3A8A] border border-[#C7D2FE] font-semibold">Class-4 High-Wind Architectural Shingles (130 MPH Rated)</span>.
+          </p>
+          <p class="mt-2">
+            <strong>PERMIT #2022-041922 (FINALIZED):</strong> Installation of
+            <span onclick="inspectWebSpan('HVHZ Large-Missile Impact Windows (NOA #21-0614)', 'L2: WindowType = HVHZ_Impact_NOA', '0.99')" class="entity-highlight px-1.5 py-0.5 rounded bg-amber-100 text-[#92400E] border border-amber-300 font-semibold">HVHZ Large-Missile Impact Windows (NOA #21-0614)</span>
+            and
+            <span onclick="inspectWebSpan('Engineered 160-MPH Aluminum Patio Cover', 'L2: PatioCover = Permitted_160MPH_Cover', '0.99')" class="entity-highlight px-1.5 py-0.5 rounded bg-[#ECFDF5] text-[#065F46] border border-[#A7F3D0] font-semibold">Engineered 160-MPH Aluminum Patio Cover</span>.
+          </p>
+        `,
+        triples: [
+          { attr: 'Permit #2023-088410', val: 'Finalized 2023 Class-4 Roof Replacement Permit', why: 'Official underwriting proof for roof age = 3 yrs', conf: '99%' },
+          { attr: 'Permit #2022-041922', val: 'HVHZ Impact Windows + 160-MPH Aluminum Patio Cover', why: 'Eliminates unpermitted structure exclusion risk', conf: '99%' }
+        ]
+      }
+    ];
+
+    // -----------------------------------------------------------------------
+    // STAGE 4 DATA: FINE-TUNED COSMOS L2 MULTI-MODAL FUSION GRAPH
+    // -----------------------------------------------------------------------
+    const l2GraphNodes = {
+      VisualPatches: {
+        id: 'VisualPatches',
+        shortTitle: 'VisualPatches',
+        sub: 'ViT 14x14',
+        x: 120,
+        y: 130,
+        stroke: '#1B367B',
+        fill: '#EEF2FF',
+        textColor: '#1E3A8A',
+        conf: '4,096 Tokens',
+        output: 'Extracts high-res spatial tokens from customer room & exterior photos.',
+        visualCues: 'Surface specular reflectance, shingle tab geometry, grout lines, window frame depth.',
+        ragFusion: 'Flags high-entropy glare regions (entropy > 0.45) for Web RAG attention boost.',
+        loraSpec: 'Frozen Cosmos Vision Encoder + BF16 Cross-Modal Projection Layer.'
+      },
+      WebRAGPriors: {
+        id: 'WebRAGPriors',
+        shortTitle: 'WebRAGPriors',
+        sub: 'Redfin/Flutter',
+        x: 120,
+        y: 300,
+        stroke: '#216E53',
+        fill: '#ECFDF5',
+        textColor: '#065F46',
+        conf: 'RAG Wt: 0.97',
+        output: 'Injects scraped Redfin, Flutter Homes, Zillow & Permit facts into Cosmos.',
+        visualCues: 'Resolves transparent window glazing, shaded patio covers, and sub-stucco framing.',
+        ragFusion: '512 dense BGE-Large embeddings attended via Cosmos cross-attention layers.',
+        loraSpec: 'Trained with 30% visual dropout so Cosmos relies on RAG tokens when photos are unclear.'
+      },
+      CosmosL2LoRA: {
+        id: 'CosmosL2LoRA',
+        shortTitle: 'Cosmos-L2-LoRA',
+        sub: 'Rank r=64',
+        x: 370,
+        y: 215,
+        stroke: '#C87A19',
+        fill: '#FEF3C7',
+        textColor: '#92400E',
+        conf: '91.5%+ L2 Acc',
+        output: 'Fine-Tuned NVIDIA Cosmos VLM unifying image pixels + external web RAG.',
+        visualCues: 'Jointly predicts all 5 L2 structural underwriting attributes in a single 38ms forward pass.',
+        ragFusion: 'Dynamic cross-attention gate weights visual vs. web permit evidence per attribute.',
+        loraSpec: 'QLoRA Rank r=64, alpha=128 on q_proj, k_proj, v_proj, o_proj (120K domain property pairs).'
+      },
+      RoofMaterial: {
+        id: 'RoofMaterial',
+        shortTitle: 'RoofMaterial',
+        sub: 'Class-4 Shingle',
+        x: 630,
+        y: 58,
+        stroke: '#216E53',
+        fill: '#FFFFFF',
+        textColor: '#18181B',
+        conf: 'Conf: 0.99',
+        output: 'L2 Tag: Architectural_Asphalt_Shingle_Class4 (Installed 2023)',
+        visualCues: 'Dimensional asphalt tab shadow lines, zero granule loss or ridge curling.',
+        ragFusion: 'Confirmed by Zillow & Permit #2023-088410 (GAF Timberline HDZ UL-2218 Class 4).',
+        loraSpec: 'Fine-tuned on 28,000 roof inspection images (76.2% baseline -> 94.8% prod accuracy).'
+      },
+      FloorMaterial: {
+        id: 'FloorMaterial',
+        shortTitle: 'FloorMaterial',
+        sub: 'Porcelain Tile',
+        x: 630,
+        y: 136,
+        stroke: '#1B367B',
+        fill: '#FFFFFF',
+        textColor: '#18181B',
+        conf: 'Conf: 0.96',
+        output: 'L2 Tag: Rectified_Porcelain_Plank_Tile (Waterproof Class-A)',
+        visualCues: '2mm rectified grout joints & low-porosity matte surface in kitchen/living.',
+        ragFusion: 'Redfin MLS confirms "Italian Porcelain Plank Tile" (prevents false hardwood surcharge).',
+        loraSpec: 'Distinguishes Hardwood vs Luxury Vinyl Plank (LVP) vs Porcelain Plank.'
+      },
+      ConstructionFrame: {
+        id: 'ConstructionFrame',
+        shortTitle: 'ConstructionMat',
+        sub: 'CBS Masonry',
+        x: 630,
+        y: 215,
+        stroke: '#1B367B',
+        fill: '#FFFFFF',
+        textColor: '#18181B',
+        conf: 'Conf: 0.98',
+        output: 'L2 Tag: Reinforced_Concrete_Block_Stucco (ISO Fire Class 2)',
+        visualCues: 'Deep 8-inch exterior window reveals & textured cementitious stucco finish.',
+        ragFusion: 'Cross-verified with Redfin MLS & County Tax Assessor structural framing code.',
+        loraSpec: '81.0% baseline -> 96.4% fine-tuned + RAG accuracy.'
+      },
+      PatioCover: {
+        id: 'PatioCover',
+        shortTitle: 'PatioCover',
+        sub: 'Permitted Cover',
+        x: 630,
+        y: 294,
+        stroke: '#216E53',
+        fill: '#FFFFFF',
+        textColor: '#18181B',
+        conf: 'Conf: 0.97',
+        output: 'L2 Tag: Present_Permitted_Alumawood_Cover (420 sq ft, 160 MPH)',
+        visualCues: 'Overhead patio fascia & posts detected despite backlit coastal sun glare.',
+        ragFusion: 'Redfin, Flutter Homes & Permit #2022-041922 resolve exact material & wind rating.',
+        loraSpec: '68.4% vision-only baseline -> 95.2% with autonomous Web Agent RAG.'
+      },
+      WindowType: {
+        id: 'WindowType',
+        shortTitle: 'WindowType',
+        sub: 'Impact Low-E',
+        x: 630,
+        y: 372,
+        stroke: '#C87A19',
+        fill: '#FFFFFF',
+        textColor: '#18181B',
+        conf: 'Conf: 0.98',
+        output: 'L2 Tag: Dual_Pane_LowE_Hurricane_Impact_Glass (NOA #21-0614)',
+        visualCues: 'Heavy-gauge wet-glazed aluminum frames & dual-pane internal spacer reflection.',
+        ragFusion: 'Redfin MLS + Miami-Dade Permit confirm PGT WinGuard Large-Missile Impact rating.',
+        loraSpec: '64.0% vision-only baseline -> 96.8% with Web Agent RAG fusion.'
+      }
+    };
+
+    const l2GraphEdges = [
+      { from: 'VisualPatches', to: 'CosmosL2LoRA', label: '4096_PATCH_TOKENS' },
+      { from: 'WebRAGPriors', to: 'CosmosL2LoRA', label: '512_WEB_RAG_TOKENS' },
+      { from: 'CosmosL2LoRA', to: 'RoofMaterial', label: 'L2_ROOF_HEAD' },
+      { from: 'CosmosL2LoRA', to: 'FloorMaterial', label: 'L2_FLOOR_HEAD' },
+      { from: 'CosmosL2LoRA', to: 'ConstructionFrame', label: 'L2_FRAME_HEAD' },
+      { from: 'CosmosL2LoRA', to: 'PatioCover', label: 'L2_PATIO_HEAD' },
+      { from: 'CosmosL2LoRA', to: 'WindowType', label: 'L2_WINDOW_HEAD' }
+    ];
+
+    // -----------------------------------------------------------------------
+    // STAGE 5 DATA: QUOTE SYNTHESIS SCENARIOS
+    // -----------------------------------------------------------------------
+    const quoteScenariosData = [
+      {
+        prompt: 'Evaluate PROP-FL-88204 (1920 Oceanfront Blvd, Miami FL, 3,420 sq ft): 14 photos verified (GPS offset 8.2m), Cosmos L1/L2 + Redfin/Flutter/Permit RAG confirms Class-4 Shingles, Dual-Pane Hurricane Impact Windows, and Permitted Alumawood Patio Cover.',
+        decision: 'AUTO-BIND APPROVED',
+        decisionClass: 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]',
+        premium: '$2,840 / yr',
+        rows: [
+          ['L1_ROOFTOP', 'GAF Class-4 Impact Architectural Shingles (2023)', 'Cosmos L2 + Permit #2023-088410', '-12.0% (-$494)', '0.99'],
+          ['L1_INTERIOR / EXT', 'Dual-Pane Low-E HVHZ Hurricane Impact Glass', 'Web Agent RAG (Redfin + NOA #21-0614)', '-11.5% (-$474)', '0.98'],
+          ['L1_PATIO_EXTERIOR', 'Permitted Insulated Alumawood Patio Cover (420 sqft)', 'Cosmos L2 + Flutter/Redfin RAG', '+$20,160 RCV (+$100)', '0.97'],
+          ['L1_KITCHEN / INT', 'Rectified Italian Porcelain Plank Tile', 'Cosmos L2 Texture + Redfin MLS', 'Water-Resist Credit', '0.96'],
+          ['L1_EXTERIOR_ENV', 'Reinforced Concrete Block & Stucco (CBS)', 'Cosmos Reveal + Tax Assessor', '-10.0% (-$412)', '0.98']
+        ],
+        math: `Living Area Base RCV (3,420 sq.ft. x $265/sq.ft.) = $906,300  |  L2 Permitted Patio Cover Add = +$20,160  |  Total Coverage A RCV = $965,000
+Base Coastal Annual Premium = $4,120.00  -->  After L2 Credits (CBS -10%, Class-4 Roof -12%, Impact Glass -11.5%, Patio +2.4%) = $2,840 / yr`,
+        ragas: `Stage 1 EXIF/APN Gate :  18 ms  |  Stage 2 Cosmos L1 (vLLM) :  64 ms  |  Stage 3 Cached Web RAG :  48 ms
+Stage 4 Cosmos L2 LoRA:  38 ms  |  Stage 5 Actuarial Pricer :  16 ms  |  TOTAL E2E QUOTE LATENCY: 184 ms (< 200ms SLA)`
+      },
+      {
+        prompt: 'Evaluate PROP-TX-44910 (742 Evergreen Terrace, Austin TX, 2,850 sq ft): 12 photos verified (GPS offset 11.4m), Masonry Brick Veneer, Class-4 Hail-Resistant Shingles, Double-Pane Low-E Windows, and Attached Cedar Pergola.',
+        decision: 'AUTO-BIND APPROVED',
+        decisionClass: 'bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]',
+        premium: '$1,920 / yr',
+        rows: [
+          ['L1_ROOFTOP', 'Class-4 Hail-Resistant Architectural Shingles', 'Cosmos L2 Vision + Zillow Facts', '-14.0% Hail Credit', '0.99'],
+          ['L1_PATIO_EXTERIOR', 'Attached Cedar Timber Pergola Cover (280 sqft)', 'Cosmos L2 Vision + Redfin MLS', '+$10,640 RCV Added', '0.96'],
+          ['L1_INTERIOR / EXT', 'Double-Pane Argon Low-E Vinyl Windows', 'Web Agent RAG (Redfin Spec Table)', '-4.0% Storm Credit', '0.95'],
+          ['L1_EXTERIOR_ENV', 'Masonry Brick Veneer on Timber Frame', 'Cosmos L2 + Travis County APN', '-6.0% Fire Credit', '0.98']
+        ],
+        math: `Living Area Base RCV (2,850 sq.ft. x $225/sq.ft.) = $641,250  |  L2 Cedar Pergola Add = +$10,640  |  Total Coverage A RCV = $651,890
+Final Annual Underwriting Premium (After Class-4 Hail & Brick Credits) = $1,920 / yr`,
+        ragas: `Stage 1 EXIF/APN Gate :  16 ms  |  Stage 2 Cosmos L1 (vLLM) :  58 ms  |  Stage 3 Cached Web RAG :  42 ms
+Stage 4 Cosmos L2 LoRA:  34 ms  |  Stage 5 Actuarial Pricer :  12 ms  |  TOTAL E2E QUOTE LATENCY: 162 ms (< 200ms SLA)`
+      },
+      {
+        prompt: 'Evaluate PROP-CO-61209 (884 Pine Ridge Rd, Denver CO, 3,100 sq ft): Cosmos L2 detects weathered Cedar Wood Shake Roof with split shakes + County Permit Agent flags Unpermitted Rear Timber Patio Cover.',
+        decision: 'REFER TO SENIOR UW',
+        decisionClass: 'bg-amber-100 text-[#92400E] border-amber-300',
+        premium: '$4,680 / yr (Hold)',
+        rows: [
+          ['L1_ROOFTOP', 'Weathered Cedar Wood Shake Roof (Split Shakes)', 'Cosmos L2 Defect Head', '+35.0% Hail/Fire Load', '0.98'],
+          ['L1_PATIO_EXTERIOR', 'Unpermitted Timber Patio Roof Extension', 'Cosmos L2 + Missing County Permit', 'Coverage B Exclusion', '0.97'],
+          ['L1_INTERIOR / EXT', 'Legacy Single-Pane Aluminum Sliders', 'Zillow Listing + Cosmos Frame', '+8.0% Glazing Load', '0.94']
+        ],
+        math: `Living Area Base RCV (3,100 sq.ft. x $250/sq.ft.) = $775,000  |  Aged Wood Shake Surcharge (+35%) + Single-Pane Load (+8%)
+Underwriting Action: Hold Auto-Bind & Require Licensed Roof Certification before binding at $4,680 / yr`,
+        ragas: `Stage 1 EXIF/APN Gate :  19 ms  |  Stage 2 Cosmos L1 (vLLM) :  66 ms  |  Stage 3 Permit RAG Check:  52 ms
+Stage 4 Cosmos L2 LoRA:  39 ms  |  Stage 5 Actuarial Pricer :  15 ms  |  TOTAL E2E QUOTE LATENCY: 191 ms (< 200ms SLA)`
+      }
+    ];
+
+    // -----------------------------------------------------------------------
+    // RENDER & INTERACTION LOGIC
+    // -----------------------------------------------------------------------
+    function updateNavigationStyles() {
+      for (let i = 1; i <= 5; i++) {
+        const tab = document.getElementById(`stepTab-${i}`);
+        const badge = document.getElementById(`stepBadge-${i}`);
+        const sec = document.getElementById(`stepSection-${i}`);
+
+        if (viewAllStacked) {
+          sec.classList.remove('hidden');
+        } else {
+          if (i === activeStage) sec.classList.remove('hidden');
+          else sec.classList.add('hidden');
+        }
+
+        if (i === activeStage) {
+          tab.className = 'text-left p-2 rounded-xl border border-[#1B367B] bg-white shadow-sm transition-all flex items-center gap-2.5';
+          badge.className = 'w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0 bg-[#1B367B] text-white';
+        } else {
+          tab.className = 'text-left p-2 rounded-xl border border-[#E5E1D8] bg-[#FDFCFA] hover:bg-white transition-all flex items-center gap-2.5';
+          badge.className = 'w-7 h-7 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0 bg-[#EAE6DC] text-zinc-700';
+        }
+      }
+    }
+
+    function navigateToStage(stageNum) {
+      activeStage = stageNum;
+      updateNavigationStyles();
+      if (viewAllStacked) {
+        const el = document.getElementById(`stepSection-${stageNum}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function toggleViewMode() {
+      viewAllStacked = !viewAllStacked;
+      document.getElementById('btnViewMode').textContent = viewAllStacked
+        ? 'View: All Stages Stacked'
+        : 'View: Single Stage Focus';
+      updateNavigationStyles();
+    }
+
+    // ---------------- STAGE 1 RENDER ----------------
+    function selectPropertySubmission(idx) {
+      selectedSubmissionIdx = idx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`subBtn-${i}`);
+        if (i === idx) {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-[#1B367B] text-white transition';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-xs font-mono text-zinc-600 hover:text-zinc-900 transition';
+        }
+      }
+
+      const sub = submissionsData[idx];
+      const topPill = document.getElementById('stage1TopPill');
+      topPill.textContent = sub.topPill;
+      topPill.className = `px-4 py-1.5 rounded-full text-xs font-mono font-semibold border ${sub.topPillClass}`;
+
+      const plotTag = document.getElementById('stage1PlotStatusTag');
+      plotTag.textContent = sub.plotTag;
+      plotTag.style.color = sub.plotTagColor;
+
+      document.getElementById('stage1ActivePlotMarker').innerHTML = `
+        <circle cx="${sub.markerX}" cy="${sub.markerY}" r="12" fill="${sub.markerColor}" fill-opacity="0.22" />
+        <circle cx="${sub.markerX}" cy="${sub.markerY}" r="6" fill="${sub.markerColor}" stroke="#FFFFFF" stroke-width="1.5" />
+      `;
+
+      document.getElementById('stage1CameraMeta').textContent = sub.cameraMeta;
+      document.getElementById('stage1ApnMeta').textContent = sub.apnMeta;
+      document.getElementById('stage1RightHeadline').textContent = sub.headline;
+      document.getElementById('stage1MetricDrift').textContent = sub.driftMetric;
+      document.getElementById('stage1MetricDeed').textContent = sub.deedMetric;
+      document.getElementById('stage1BottomQuote').textContent = sub.bottomQuote;
+      document.getElementById('stage1BottomBadge').textContent = sub.bottomBadge;
+      document.getElementById('stage1CodePre').textContent = sub.codeSnippet;
+
+      const barsEl = document.getElementById('stage1BarsContainer');
+      barsEl.innerHTML = sub.bars.map(b => `
+        <div>
+          <div class="flex justify-between text-xs font-mono mb-1">
+            <span class="text-zinc-700">${b.label}</span>
+            <span class="font-bold text-zinc-900">${b.pct}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="h-full rounded-full transition-all duration-500" style="width: ${b.pct}%; background-color: ${b.color}"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function switchStage1View(mode) {
+      stage1RightView = mode;
+      const btnBars = document.getElementById('s1ViewBtn-bars');
+      const btnCode = document.getElementById('s1ViewBtn-code');
+      if (mode === 'bars') {
+        btnBars.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white';
+        btnCode.className = 'px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]';
+        document.getElementById('stage1BarsContainer').classList.remove('hidden');
+        document.getElementById('stage1CodeContainer').classList.add('hidden');
+      } else {
+        btnCode.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white';
+        btnBars.className = 'px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]';
+        document.getElementById('stage1CodeContainer').classList.remove('hidden');
+        document.getElementById('stage1BarsContainer').classList.add('hidden');
+      }
+    }
+
+    // ---------------- STAGE 2 RENDER ----------------
+    function renderStage2() {
+      const container = document.getElementById('l1ZonePillsContainer');
+      container.innerHTML = '';
+      l1ZonesData.forEach((z, idx) => {
+        const btn = document.createElement('button');
+        btn.onclick = () => {
+          selectedL1ZoneIdx = idx;
+          renderStage2();
+        };
+        const isSel = (idx === selectedL1ZoneIdx);
+        btn.className = `px-3 py-1 rounded-lg text-xs font-mono font-semibold transition ${
+          isSel ? 'bg-[#1B367B] text-white shadow-sm' : 'bg-white text-zinc-700 border border-[#D5CFC2] hover:bg-[#EAE6DC]'
+        }`;
+        btn.textContent = z.label;
+        container.appendChild(btn);
+      });
+
+      const active = l1ZonesData[selectedL1ZoneIdx];
+      const tagEl = document.getElementById('stage2ActiveZoneTag');
+      tagEl.textContent = active.tagText;
+      tagEl.style.color = active.color;
+
+      document.getElementById('stage2LatentPoint').innerHTML = `
+        <circle cx="${active.cx}" cy="${active.cy}" r="12" fill="${active.color}" fill-opacity="0.24" />
+        <circle cx="${active.cx}" cy="${active.cy}" r="6" fill="${active.color}" stroke="#FFFFFF" stroke-width="1.5" />
+      `;
+      document.getElementById('stage2VisualCuesList').textContent = active.cues;
+      document.getElementById('stage2MetricConf').textContent = active.conf;
+      document.getElementById('stage2BottomNote').textContent = active.note;
+      document.getElementById('stage2CodePre').textContent = stage2VllmCode;
+    }
+
+    function switchStage2RightView(mode) {
+      const b1 = document.getElementById('s2Btn-benchmarks');
+      const b2 = document.getElementById('s2Btn-vllm');
+      if (mode === 'benchmarks') {
+        b1.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white';
+        b2.className = 'px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]';
+        document.getElementById('stage2BenchmarksContainer').classList.remove('hidden');
+        document.getElementById('stage2VllmContainer').classList.add('hidden');
+      } else {
+        b2.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white';
+        b1.className = 'px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]';
+        document.getElementById('stage2VllmContainer').classList.remove('hidden');
+        document.getElementById('stage2BenchmarksContainer').classList.add('hidden');
+      }
+    }
+
+    // ---------------- STAGE 3 RENDER ----------------
+    function selectWebPortal(idx) {
+      selectedPortalIdx = idx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`portalBtn-${i}`);
+        if (i === idx) {
+          btn.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded text-xs font-mono bg-white text-zinc-700 border border-[#D5CFC2] hover:bg-[#EAE6DC]';
+        }
+      }
+      document.getElementById('webPortalCardContent').innerHTML = webPortalsData[idx].html;
+      renderStage3Right();
+    }
+
+    function inspectWebSpan(spanText, target, weight) {
+      document.getElementById('webSpanInspectorText').textContent = `Span: "${spanText}" -> ${target}`;
+      document.getElementById('webSpanWeightBadge').textContent = `RAG Weight: ${weight}`;
+    }
+
+    function switchStage3Tab(tab) {
+      stage3RightTab = tab;
+      ['triples', 'code', 'yaml'].forEach(t => {
+        const btn = document.getElementById(`s3Tab-${t}`);
+        if (t === tab) {
+          btn.className = 'px-2.5 py-1 rounded text-xs font-mono font-semibold bg-[#1B367B] text-white';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded text-xs font-mono font-medium bg-[#F6F4EE] text-zinc-700 border border-[#E5E1D8]';
+        }
+      });
+      renderStage3Right();
+    }
+
+    function renderStage3Right() {
+      const panel = document.getElementById('stage3RightPanel');
+      const portal = webPortalsData[selectedPortalIdx];
+      if (stage3RightTab === 'triples') {
+        panel.innerHTML = `<div class="space-y-2.5">` + portal.triples.map(t => `
+          <div class="white-subcard p-3 space-y-1 font-mono text-xs">
+            <div class="flex justify-between">
+              <span class="font-bold text-[#1B367B]">${t.attr}</span>
+              <span class="px-2 py-0.5 rounded bg-[#ECFDF5] text-[#065F46] text-[10px] font-bold">Conf: ${t.conf}</span>
+            </div>
+            <div class="text-zinc-900 font-semibold">${t.val}</div>
+            <div class="text-[11px] text-[#92400E]">Why Needed: ${t.why}</div>
+          </div>
+        `).join('') + `</div>`;
+      } else if (stage3RightTab === 'code') {
+        panel.innerHTML = `<pre class="white-subcard p-3 text-xs font-mono text-zinc-800 overflow-x-auto leading-relaxed"># LangGraph + Playwright Autonomous Property Web Agent
+async def crawl_property_portals(address: str, apn: str):
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        # Parallel scrape: Redfin MLS + Flutter Homes + Zillow + Permits
+        facts = await asyncio.gather(
+            scrape_redfin_mls(browser, address),
+            scrape_flutter_and_zillow_facts(browser, address),
+            scrape_municipal_permits(browser, apn)
+        )
+        return embed_into_pinecone_rag(facts)</pre>`;
+      } else {
+        panel.innerHTML = `<pre class="white-subcard p-3 text-xs font-mono text-zinc-800 overflow-x-auto leading-relaxed">web_rag_priors:
+  source_address: "1920 Oceanfront Blvd, Miami, FL 33139"
+  crawled_portals: ["Redfin MLS", "Flutter Homes", "Zillow", "Miami-Dade Permits"]
+  injected_cosmos_l2_tokens:
+    patio_cover: "Permitted Insulated Alumawood Cover (160 MPH)"
+    window_type: "Dual-Pane Low-E Hurricane Impact (NOA #21-0614)"
+    roof_material: "GAF Class-4 Architectural Shingles (2023)"</pre>`;
+      }
+    }
+
+    // ---------------- STAGE 4 RENDER (SVG FUSION GRAPH) ----------------
+    function renderL2FusionGraph() {
+      const edgesGroup = document.getElementById('l2SvgEdgesGroup');
+      const nodesGroup = document.getElementById('l2SvgNodesGroup');
+      const pillsEl = document.getElementById('l2QuickPills');
+
+      edgesGroup.innerHTML = '';
+      nodesGroup.innerHTML = '';
+      pillsEl.innerHTML = '';
+
+      Object.values(l2GraphNodes).forEach(node => {
+        const btn = document.createElement('button');
+        btn.onclick = () => {
+          selectedL2NodeId = node.id;
+          renderL2FusionGraph();
+          renderL2Inspector();
+        };
+        const active = (node.id === selectedL2NodeId);
+        btn.className = `px-2.5 py-1 rounded-lg text-xs font-mono transition ${
+          active ? 'bg-[#1B367B] text-white font-semibold' : 'bg-white text-zinc-700 border border-[#D5CFC2] hover:bg-[#EAE6DC]'
+        }`;
+        btn.textContent = `:${node.shortTitle}`;
+        pillsEl.appendChild(btn);
+      });
+
+      l2GraphEdges.forEach(edge => {
+        const src = l2GraphNodes[edge.from];
+        const dst = l2GraphNodes[edge.to];
+        const isConn = (edge.from === selectedL2NodeId || edge.to === selectedL2NodeId);
+        const midX = (src.x + dst.x) / 2;
+        const midY = (src.y + dst.y) / 2;
+
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', src.x);
+        line.setAttribute('y1', src.y);
+        line.setAttribute('x2', dst.x);
+        line.setAttribute('y2', dst.y);
+        line.setAttribute('stroke', isConn ? '#1B367B' : '#D4D0C8');
+        line.setAttribute('stroke-width', isConn ? '2.2' : '1.4');
+        line.setAttribute('marker-end', isConn ? 'url(#arrow-editorial-active)' : 'url(#arrow-editorial-default)');
+        if (isConn) line.setAttribute('class', 'animated-edge');
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const w = edge.label.length * 5.8 + 12;
+        rect.setAttribute('x', midX - w / 2);
+        rect.setAttribute('y', midY - 8);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', 16);
+        rect.setAttribute('rx', 4);
+        rect.setAttribute('fill', isConn ? '#EEF2FF' : '#F6F4EE');
+        rect.setAttribute('stroke', isConn ? '#1B367B' : '#E5E1D8');
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', midX);
+        txt.setAttribute('y', midY + 3);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('fill', isConn ? '#1B367B' : '#71717A');
+        txt.setAttribute('font-size', '8.5');
+        txt.setAttribute('font-family', 'JetBrains Mono');
+        txt.textContent = edge.label;
+
+        g.appendChild(line);
+        g.appendChild(rect);
+        g.appendChild(txt);
+        edgesGroup.appendChild(g);
+      });
+
+      Object.values(l2GraphNodes).forEach(node => {
+        const isSel = (node.id === selectedL2NodeId);
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', `cursor-pointer ${isSel ? 'active-svg-node' : ''}`);
+        g.onclick = () => {
+          selectedL2NodeId = node.id;
+          renderL2FusionGraph();
+          renderL2Inspector();
+        };
+
+        if (isSel) {
+          const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          halo.setAttribute('cx', node.x);
+          halo.setAttribute('cy', node.y);
+          halo.setAttribute('r', 42);
+          halo.setAttribute('fill', 'none');
+          halo.setAttribute('stroke', node.stroke);
+          halo.setAttribute('stroke-width', '2');
+          halo.setAttribute('stroke-dasharray', '4 3');
+          g.appendChild(halo);
+        }
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', node.x);
+        circle.setAttribute('cy', node.y);
+        circle.setAttribute('r', 34);
+        circle.setAttribute('fill', node.fill);
+        circle.setAttribute('stroke', node.stroke);
+        circle.setAttribute('stroke-width', isSel ? '3' : '2');
+
+        const t1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        t1.setAttribute('x', node.x);
+        t1.setAttribute('y', node.y - 3);
+        t1.setAttribute('text-anchor', 'middle');
+        t1.setAttribute('fill', node.textColor);
+        t1.setAttribute('font-size', '9.5');
+        t1.setAttribute('font-weight', '700');
+        t1.setAttribute('font-family', 'JetBrains Mono');
+        t1.textContent = node.shortTitle;
+
+        const t2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        t2.setAttribute('x', node.x);
+        t2.setAttribute('y', node.y + 11);
+        t2.setAttribute('text-anchor', 'middle');
+        t2.setAttribute('fill', '#52525B');
+        t2.setAttribute('font-size', '8.5');
+        t2.setAttribute('font-family', 'JetBrains Mono');
+        t2.textContent = node.sub;
+
+        g.appendChild(circle);
+        g.appendChild(t1);
+        g.appendChild(t2);
+        nodesGroup.appendChild(g);
+      });
+    }
+
+    function renderL2Inspector() {
+      const n = l2GraphNodes[selectedL2NodeId];
+      document.getElementById('l2InspectorTitle').textContent = `:${n.shortTitle} (${n.sub})`;
+      document.getElementById('l2InspectorConfBadge').textContent = n.conf;
+      document.getElementById('l2InspectorCardBody').innerHTML = `
+        <div class="white-subcard p-3">
+          <div class="text-[10px] font-mono uppercase text-[#216E53] font-semibold">Reconciled L2 Output</div>
+          <div class="font-mono font-bold text-zinc-900 mt-0.5">${n.output}</div>
+        </div>
+        <div class="white-subcard p-3">
+          <div class="text-[10px] font-mono uppercase text-[#1E3A8A] font-semibold">Cosmos Visual Patch Cues</div>
+          <div class="font-mono text-zinc-700 mt-0.5">${n.visualCues}</div>
+        </div>
+        <div class="white-subcard p-3">
+          <div class="text-[10px] font-mono uppercase text-[#92400E] font-semibold">Autonomous Web Agent RAG Context</div>
+          <div class="font-mono text-zinc-700 mt-0.5">${n.ragFusion}</div>
+        </div>
+        <div class="white-subcard p-3">
+          <div class="text-[10px] font-mono uppercase text-zinc-500 font-semibold">QLoRA Fine-Tuning Specification</div>
+          <div class="font-mono text-zinc-700 mt-0.5">${n.loraSpec}</div>
+        </div>
+      `;
+    }
+
+    // ---------------- STAGE 5 RENDER ----------------
+    function loadQuoteScenario(idx) {
+      selectedQuoteIdx = idx;
+      for (let i = 0; i < 3; i++) {
+        const btn = document.getElementById(`quoteBtn-${i}`);
+        if (i === idx) {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-mono font-semibold bg-[#1B367B] text-white transition';
+        } else {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-mono bg-white text-zinc-700 border border-[#D5CFC2] hover:bg-[#EAE6DC] transition';
+        }
+      }
+      document.getElementById('quoteScenarioInput').value = quoteScenariosData[idx].prompt;
+      executeUnderwritingQuotePipeline();
+    }
+
+    function executeUnderwritingQuotePipeline() {
+      const sc = quoteScenariosData[selectedQuoteIdx];
+      const badge = document.getElementById('finalQuoteDecisionBadge');
+      badge.textContent = sc.decision;
+      badge.className = `px-2.5 py-0.5 rounded border font-bold ${sc.decisionClass}`;
+      document.getElementById('finalAnnualPremiumBadge').textContent = sc.premium;
+
+      document.getElementById('quoteResultTbody').innerHTML = sc.rows.map(r => `
+        <tr class="hover:bg-[#F6F4EE] transition">
+          <td class="py-2.5 px-3 font-bold text-[#1B367B]">${r[0]}</td>
+          <td class="py-2.5 px-3 font-semibold text-zinc-900">${r[1]}</td>
+          <td class="py-2.5 px-3 text-zinc-600">${r[2]}</td>
+          <td class="py-2.5 px-3 font-bold text-[#216E53]">${r[3]}</td>
+          <td class="py-2.5 px-3 text-zinc-900">${r[4]}</td>
+        </tr>
+      `).join('');
+
+      document.getElementById('codeStep5ActuarialMath').textContent = sc.math;
+      document.getElementById('codeStep5Ragas').textContent = sc.ragas;
+    }
+
+    // ---------------- AUTO-PLAY & MODAL ----------------
+    function toggleAutoDemo() {
+      const txt = document.getElementById('autoDemoText');
+      if (autoDemoInterval) {
+        clearInterval(autoDemoInterval);
+        autoDemoInterval = null;
+        txt.textContent = 'Auto-Play Pipeline';
+      } else {
+        txt.textContent = 'Stop Auto-Play';
+        autoDemoInterval = setInterval(() => {
+          const next = activeStage < 5 ? activeStage + 1 : 1;
+          navigateToStage(next);
+        }, 4200);
+      }
+    }
+
+    function openCheatSheetModal() {
+      document.getElementById('cheatSheetModal').classList.remove('hidden');
+    }
+
+    function closeCheatSheetModal() {
+      document.getElementById('cheatSheetModal').classList.add('hidden');
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeCheatSheetModal();
+    });
+
+    window.onload = function () {
+      updateNavigationStyles();
+      selectPropertySubmission(0);
+      renderStage2();
+      selectWebPortal(0);
+      renderL2FusionGraph();
+      renderL2Inspector();
+      loadQuoteScenario(0);
+    };
+  </script>
+</body>
+</html>

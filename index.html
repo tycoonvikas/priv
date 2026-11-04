@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise AI & Architecture Presentations | Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            navy: {
+              950: '#060B18',
+              900: '#0B132B',
+              800: '#111D42',
+              700: '#1C2C5E',
+            },
+            accent: {
+              blue: '#3B82F6',
+              cyan: '#06B6D4',
+              emerald: '#10B981',
+              amber: '#F59E0B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-glow {
+      background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15), transparent 70%);
+    }
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      border-color: rgba(96, 165, 250, 0.4);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-[#070B14] text-slate-100 min-h-screen font-sans antialiased selection:bg-blue-600 selection:text-white">
+  <!-- Ambient background glow -->
+  <div class="fixed inset-0 gradient-glow pointer-events-none"></div>
+
+  <div class="relative max-w-6xl mx-auto px-6 py-16 sm:py-24">
+    <!-- Header -->
+    <header class="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/70 border border-blue-800/50 text-blue-300 text-xs font-mono font-medium mb-6">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        Interactive Architecture & AI Demos
+      </div>
+      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+        Enterprise AI <span class="font-serif italic font-normal text-blue-400">Presentations</span>
+      </h1>
+      <p class="text-lg text-slate-400 leading-relaxed">
+        Production-grade architectural walkthroughs, multi-agent frameworks, and autonomous intelligence systems designed for enterprise deployment.
+      </p>
+    </header>
+
+    <!-- Presentation Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      
+      <!-- Card 1: Autonomous Risk Verification -->
+      <div class="card-hover bg-[#0E1528] border border-slate-800/80 rounded-2xl p-7 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-5">
+            <span class="px-3 py-1 rounded-md text-xs font-mono font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-800/40">
+              Insurance & Risk
+            </span>
+            <span class="text-slate-500 text-xs font-mono">01</span>
+          </div>
+
+          <h2 class="text-2xl font-bold text-white mb-3 tracking-tight">
+            OmniRisk AI Platform
+          </h2>
+          <p class="text-sm font-medium text-slate-400 mb-4">
+            Underwriting & Risk Verification Architecture Walkthrough
+          </p>
+          <p class="text-xs text-slate-500 leading-relaxed mb-6">
+            End-to-end autonomous underwriting engine leveraging vision transformers, multimodal geospatial telemetry, and deterministic risk modeling for policy pricing.
+          </p>
+
+          <div class="flex flex-wrap gap-1.5 mb-8">
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Underwriting</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Risk Verification</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Multimodal</span>
+          </div>
+        </div>
+
+        <a href="autonomous_risk_verification.html" class="inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-blue-600/20 group">
+          <span>Launch Presentation</span>
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Card 2: Algorithmic Trade Execution -->
+      <div class="card-hover bg-[#0E1528] border border-slate-800/80 rounded-2xl p-7 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-5">
+            <span class="px-3 py-1 rounded-md text-xs font-mono font-medium bg-blue-950/80 text-blue-300 border border-blue-800/40">
+              Quantitative Systems
+            </span>
+            <span class="text-slate-500 text-xs font-mono">02</span>
+          </div>
+
+          <h2 class="text-2xl font-bold text-white mb-3 tracking-tight">
+            Execution Intelligence
+          </h2>
+          <p class="text-sm font-medium text-slate-400 mb-4">
+            Multi-Agent Algorithmic Trading & High-Frequency System Architecture
+          </p>
+          <p class="text-xs text-slate-500 leading-relaxed mb-6">
+            Autonomous multi-agent algorithmic execution platform with reinforcement learning agents, order routing optimization, and real-time risk surveillance.
+          </p>
+
+          <div class="flex flex-wrap gap-1.5 mb-8">
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Multi-Agent</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Algorithmic Trading</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Low-Latency</span>
+          </div>
+        </div>
+
+        <a href="algorithmic_trade_execution.html" class="inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-blue-600/20 group">
+          <span>Launch Presentation</span>
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Card 3: Federated Semantic NL2Query -->
+      <div class="card-hover bg-[#0E1528] border border-slate-800/80 rounded-2xl p-7 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-5">
+            <span class="px-3 py-1 rounded-md text-xs font-mono font-medium bg-purple-950/80 text-purple-300 border border-purple-800/40">
+              Federated Data
+            </span>
+            <span class="text-slate-500 text-xs font-mono">03</span>
+          </div>
+
+          <h2 class="text-2xl font-bold text-white mb-3 tracking-tight">
+            Data Intelligence & NL2Query
+          </h2>
+          <p class="text-sm font-medium text-slate-400 mb-4">
+            Federated Enterprise Semantic Engine & Multi-Agent NL2Query
+          </p>
+          <p class="text-xs text-slate-500 leading-relaxed mb-6">
+            Zero-data-movement federated semantic query engine with autonomous SQL compilation, dialect conversion, role-based guardrails, and lineage validation.
+          </p>
+
+          <div class="flex flex-wrap gap-1.5 mb-8">
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Federated Query</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">NL2Query</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">Data Mesh</span>
+          </div>
+        </div>
+
+        <a href="federated_semantic_nl2query.html" class="inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-blue-600/20 group">
+          <span>Launch Presentation</span>
+          <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-20 pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+      <div>
+        Published via <span class="text-slate-400 font-medium">GitHub Pages</span> &bull; Repository: <a href="https://github.com/tycoonvikas/priv" class="text-blue-400 hover:underline">tycoonvikas/priv</a>
+      </div>
+      <div class="font-mono text-slate-500">
+        Enterprise Architecture Suite
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
